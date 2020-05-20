@@ -28,7 +28,7 @@ twitter_username: None
 github_username:  ketancmaheshwari
 
 # Build settings
-theme: minima
+theme: jekyll-theme-midnight
 plugins:
   - jekyll-feed
 
