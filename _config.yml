@@ -28,7 +28,8 @@ twitter_username: None
 github_username:  ketancmaheshwari
 
 # Build settings
-theme: minima
+#theme: minima
+remote_theme: benbalter/retlab
 plugins:
   - jekyll-feed
 
