@@ -182,6 +182,7 @@ BEGIN{
     publisher_pdf=16; references=17; keywords=18; abstract=19; authors=20;
 }
 
+#collect stop words
 NR==FNR{x[$1];next}
 
 $lang~/en/ && ($keywords!~/null/ || $title!~/null/ || $abstract!~/null/) {
