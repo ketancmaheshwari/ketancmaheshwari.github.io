@@ -6,11 +6,11 @@ categories: jekyll update
 ---
 
 # Tl;Dr
-Awk is awesome; HPC too.
+Awk to process science publications data; HPC parallel scripting to parallelize Awk calls. Fast and scalable solutions on a fat machine.
 
 # Introduction
 
-Presenting my solution to a Data Challenge organized at work. I address the challenge by combining the simplicity of the classic Linux tools with the power of a modern scalable HPC parallel scripting solution.
+Presenting the solution I did in 2018 to a Data Challenge organized at [work](https://smc-datachallenge.ornl.gov/challenges-2018/). I solve Scientific Pub Mining (no. 4) challenge by combining classic Linux tools with a modern scalable HPC parallel scripting solution.
 
 Find more at [github](https://github.com/ketancmaheshwari/SMC18). The source code for the core solutions are in `src/prob*.awk`. The source code for the HPC parallelization of the core solutions are in `src/runprob*.swift`. Results are in the `results` directory.
 
@@ -18,19 +18,19 @@ Find more at [github](https://github.com/ketancmaheshwari/SMC18). The source cod
 
 ## Software 
 
-Classic Linux tools such as `awk`, `sort`, `grep`, `tr`, `sed` and `bash` are used. Awk is dominantly used for the bulk of processing. Syntax of awk programs is known to be terse and hard to read by some accounts. I have taken special care to make the programs as readable as possible. Argonne National Laboratory developed parallel scripting tool called [Swift](http://swift-lang.org/Swift-T) (not to be confused with Apple Swift) is used to run the awk programs in parallel over the dataset to radically improve performance. Swift uses MPI based communication and load-balancing model to parallelize over shared as well as distributed memory architectures.
+**Awk** is dominantly used for the bulk of processing. Syntax of awk programs is known to be terse and hard to read by some accounts. I have taken special care to make the programs as readable as possible. Argonne National Laboratory developed parallel scripting tool called [Swift](http://swift-lang.org/Swift-T) (not to be confused with Apple Swift) is used to run the awk programs in parallel over the dataset to radically improve performance. Swift uses MPI based communication and load-balancing model to parallelize over shared as well as distributed memory architectures. Other Linux tools such as *sort*, *grep*, *tr*, *sed* are used as well. 
 
 ## Hardware 
 
-Fortunately, I had access to a large-memory (24 T) SGI system with 512-core Intel Xeon (2.5GHz). All the IO is memory (*/dev/shm*) bound ie. the data is read from and written to */dev/shm*.
+Fortunately, I had access to a large-memory (24 T) SGI system with 512-core Intel Xeon (2.5GHz) CPUs. All the IO is memory (*/dev/shm*) bound ie. the data is read from and written to */dev/shm*.
 
 ## Rationale for Tools Choice 
 
-`Awk` is familiar, concise, fast, and expressive – especially for text processing applications. I also wanted to see how far can I go with awk -- and boy did I go far!  Alternative tools such as modern Python libraries have sometimes scaling limitations, portability concerns and learning curve. Some are still evolving. Swift is used simply because I was familiar with it and confident that it will scale well.
+Awk is familiar, concise, fast, and expressive – especially for text processing applications. I also wanted to see how far can I go with awk -- and boy did I go far!  Alternative tools such as modern Python libraries have sometimes scaling limitations, portability concerns and learning curve. Some are still evolving. Swift is used simply because I was familiar with it and confident that it will scale well in this case.
 
 # Data 
 
-The original [data](https://www.openacademic.ai/oag) was in two sets (*aminer* and *mag*) totaling 322 `json` files -- each file containing one million records. A file with a list of records appearing in both sets was available. An `awk` script (`src/filterdup.awk`) is used to exclude the duplicate records from the aminer dataset. As a result, it came out about 256 million (256,382,605 to be exact) unique records to be processed. The total data size is 329G. Several fields in the data are `null`. Those records were avoided where relevant. Additionally, records related to non-English publications were avoided where needed.
+The original [data](https://www.openacademic.ai/oag) was in two sets (*aminer* and *mag*) of 322 `json` files -- each containing a million records. A file with a list of records appearing in both sets was available. An awk script (`src/filterdup.awk`) is used to exclude the duplicate records from the aminer dataset. As a result, it came out about 256 million (256,382,605 to be exact) unique records to be processed. The total data size is 329GB. Some fields in the data are *null*. Those records are avoided where relevant. Additionally, records related to non-English publications were avoided as needed.
 
 
 ```bash
@@ -68,11 +68,11 @@ In addition to the existing data, I use four lists:
 
 ## Preprocessing and Curation
 
-jq is used to transform json data to tabular format (`src/json2tabular.sh`). The json files were converted to tabular files with 19 original columns and one additional column called *num_authors* showing the number of authors for a given publication record. The authors field has a semi-colon separator for multiple authors. Further curation of tabular data is done by removing extraneous space, square brackets, escape characters and quotes using `sed`.
+jq is used to transform the json data to tabular format (`src/json2tabular.sh`). The converted tabular files has 19 original columns (*id*, *title*, *authors*, *year*, *ISBN*,  etc) and one additional column called *num_authors* showing the number of authors for a given publication record. The authors column has a semi-colon separator for multiple authors. Further curation of tabular data is done by removing extraneous space, square brackets, escape characters and quotes using *sed*.
 
 ## Scaling up
 
-Each solution is run in parallel over the 322 data files on 322 CPU cores using Swift. This resulted in radical speedup. None of the solution has taken more than an hour of runtime–some taking less than a minute.
+Each solution is run in parallel over the 322 data files on 322 CPU cores using Swift. This resulted in radical speedup at scale. None of the solution has taken more than an hour of runtime–some even less than a minute.
 
 ## Challenge1 
 
@@ -217,7 +217,7 @@ END{
 
 The parallel implementation (code shown below) finishes in **9 minutes**.
 
-```
+```C
 import files;
 import unix;
 
@@ -386,6 +386,7 @@ The third approach finds the top 10 most frequently occurring terms each year to
 # find the top 10 trending topics yearwise and see how they appear/disappear in the trend
 # We achieve this by writing keywords, titles and abstract to files named after 
 # the year they appeared and do postprocessing on those files
+
 BEGIN{
     FS = "qwqw"
     IGNORECASE = 1
@@ -419,7 +420,6 @@ $lang~/en/ && $n_citation>0 && $year==yr && $keywords!~/null/{
      split($abstract, c, " ")
      for (i in c) if(length(c[i])>2 && match(c[i],/[a-z]/) && c[i] in x == 0) print c[i]
 
-     #print $title,$keywords,$abstract >> $year
 }
 
 #Do the following for postprocessing:
@@ -431,9 +431,9 @@ $lang~/en/ && $n_citation>0 && $year==yr && $keywords!~/null/{
      | head -10 > trending/trending.$i.txt) & done
 ```
 
-Parallelizing the third approach was challenging because it involved a two-level parallel nested foreach loop. The outer loop iterates over the years and the inner loop iterates over the input files. The parallel implementation finishes in **48 minutes**. Swift code for this shown below.
+Parallelizing the third approach was challenging as it involved a two-level parallel nested foreach loop. The outer loop iterates over the years and the inner loop iterates over the input files. The parallel implementation finishes in **48 minutes**. Swift code for this shown below.
 
-```
+```C
 import files;
 import io;
 import unix;
