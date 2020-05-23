@@ -10,9 +10,7 @@ Awk to process scientific publications data; HPC parallel scripting to paralleli
 
 # Introduction
 
-Presenting the solution I worked on in 2018 to a Data Challenge organized at [work](https://smc-datachallenge.ornl.gov/challenges-2018/). I solve Scientific Pub Mining (no. 4) challenge by combining classic Linux tools with a modern scalable HPC parallel scripting solution.
-
-Details available at [github](https://github.com/ketancmaheshwari/SMC18). The source code for the core solutions are in `src/prob*.awk`. The source code for the HPC parallelization of the core solutions are in `src/runprob*.swift`. Results are in the `results` folder.
+Presenting the solution I worked on in 2018 to a Data Challenge organized at [work](https://smc-datachallenge.ornl.gov/challenges-2018/). I solve Scientific Pub Mining (no. 4) challenge by combining classic Linux tools with a modern scalable HPC parallel scripting solution. The project is hosted on [github](https://github.com/ketancmaheshwari/SMC18). 
 
 # Tools used 
 
