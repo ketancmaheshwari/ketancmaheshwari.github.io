@@ -53,9 +53,7 @@ NR == FNR{a[$2] = $1}
 !($1 in a) && FILENAME ~ /aminer/{ print }
 ```
 
-## Auxiliary data 
-
-In addition to the existing data, I use four lists: 
+In addition to the publications data, I use the following: 
 
 1) A list of large cities (pop 100K+) and their lat-long coordinates (3,517) 
 
@@ -383,7 +381,7 @@ END{
 
 ```
 
-The third approach finds the top 10 most frequently occurring terms each year to find how the topics get in and out of trend over the years. An animation showing a bubble plot of words changing between the year 1800 and 2017 is found [here](https://github.com/ketancmaheshwari/SMC18/blob/master/results/freqwordsoveryears.mkv?raw=true). A file list of all the words is found in `results/trending_words_by_year`.
+The third approach finds the top 10 most frequently occurring terms each year to find how the topics get in and out of trend over the years. An mkv animation video showing a bubble plot of words trending between the year 1800 and 2017 is [here](https://github.com/ketancmaheshwari/SMC18/blob/master/results/freqwordsoveryears.mkv?raw=true). A file list of all the words is found in `results/trending_words_by_year`.
 
 ```bash
 #!/usr/bin/env awk -f
@@ -407,7 +405,8 @@ NR==FNR{x[$1];next}
 
 $lang~/en/ && $n_citation>0 && $year==yr && $keywords!~/null/{
     # write title, keywords and abstract to a file 
-    # titled by the year in which they appear
+    #      titled by the year in which they appear
+    
     # treat title
     $title = tolower($title)
     split($title, a, " ")
@@ -430,11 +429,11 @@ $lang~/en/ && $n_citation>0 && $year==yr && $keywords!~/null/{
 
 #Do the following for postprocessing:
 #for i in 18?? 19?? 20??
- do (grep -o -E '\w+' $i | tr [A-Z] [a-z] \
-     | sed -e 's/null//g' -e 's/^.$//g' -e 's/^..$//g' -e 's/^[0-9]*$//g' \
-     | awk NF | fgrep -v -w -f stop_words.txt \
-     | sort | uniq -c | sort -nr \
-     | head -10 > trending/trending.$i.txt) & done
+# do (grep -o -E '\w+' $i | tr [A-Z] [a-z] \
+#     | sed -e 's/null//g' -e 's/^.$//g' -e 's/^..$//g' -e 's/^[0-9]*$//g' \
+#     | awk NF | fgrep -v -w -f stop_words.txt \
+#     | sort | uniq -c | sort -nr \
+#     | head -10 > trending/trending.$i.txt) & done
 ```
 
 Parallelizing the third approach was challenging as it involved a two-level parallel nested foreach loop. The outer loop iterates over the years and the inner loop iterates over the input files. The parallel implementation finishes in **48 minutes**. Swift code for this shown below.
