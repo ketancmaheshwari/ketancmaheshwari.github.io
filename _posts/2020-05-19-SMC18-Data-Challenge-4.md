@@ -47,6 +47,7 @@ The original [data](https://www.openacademic.ai/oag) was in two sets (*aminer* a
 
 BEGIN{FS = OFS = "qwqw"}
 
+#NR == FNR is an idiom that ensures the condition is true only for the first file
 NR == FNR{a[$2] = $1}
 
 !($1 in a) && FILENAME ~ /aminer/{ print }
@@ -86,12 +87,12 @@ This is solved in two ways. First approach identifies all the entries with citat
 BEGIN{
 
     # Field Seperator
-    FS="qwqw"
+    FS = "qwqw"
     # Output field seperator
-    OFS="\t"
-    IGNORECASE=1
+    OFS = "\t"
+    IGNORECASE = 1
 
-    # Field names
+    # Field names for readability
     id=1; title=2; num_authors=3; doi=4; fos_isbn=5; doctype_issn=6;
     lang=7; n_citation=8; issue=9; url=10; volume=11; page_start=12;
     page_end=13; year=14; venue=15; publisher_pdf=16; references=17;
@@ -113,9 +114,9 @@ The second approach finds the names of authors whose names are repeating for que
 
 BEGIN{
     # Field seperator
-    FS="qwqw"
-    OFS="\t"
-    IGNORECASE=1
+    FS = "qwqw"
+    OFS = "\t"
+    IGNORECASE = 1
 
     # Field names
     id=1; title=2; num_authors=3; doi=4; fos_isbn=5; doctype_issn=6;
@@ -173,6 +174,7 @@ This is solved by identifying most frequently appearing words in the collection.
 BEGIN{
     FS = "qwqw"
     IGNORECASE = 1
+  
     # Field names
     id=1; title=2; num_authors=3; doi=4; fos_isbn=5; 
     doctype_issn=6;lang=7; n_citation=8; issue=9; url=10;
@@ -225,7 +227,7 @@ app (file out) myawk (file awkprog, file stop_words, file infile){
     "/usr/bin/awk" "-f" awkprog stop_words infile @stdout=out
 }
 
-file aminer[]=glob("/dev/shm/aminer_mag_papers/*.txt");
+file aminer[] = glob("/dev/shm/aminer_mag_papers/*.txt");
 file outfiles[];
 
 foreach v, i in aminer{
@@ -255,8 +257,7 @@ This is solved by identifying the author affiliations for the records that has t
 
 BEGIN{
     # Field seperator
-    FS="qwqw"
-    OFS="qwqw"
+    FS = OFS = "qwqw"
     IGNORECASE = 1
 
     # Field names
@@ -273,7 +274,7 @@ NR==FNR{a[$1];next} #process the countries/cities/univs data
 $0~topic && $num_authors!~/null/ && $authors~/\,/{ 
     # extract words from author affiliation and compare with the countries.
     # If a match is found increment that array entry.
-    w=split($authors, b, ",")
+    w = split($authors, b, ",")
     for (i=0;i<w;i++){
         gsub(";"," ",b[i]) 
         if (b[i] in a) a[b[i]]++
@@ -332,7 +333,7 @@ $lang~/en/ && $year!~/null/ && $0~topic1 && $0~topic2 {
 }
 
 END{
-    n=asorti(a,b)
+    n = asorti(a,b)
     printf("Trend for topics: %s, %s\n", topic1, topic2)
     for (i=1;i<=n;i++) printf("%d :- %d\n", b[i], a[b[i]])
 }
@@ -356,6 +357,7 @@ The second approach finds the papers that has highest impact in each year and ex
 BEGIN{
     FS = OFS = "qwqw"
     IGNORECASE = 1
+
     # Field names
     id=1; title=2; num_authors=3; doi=4; fos_isbn=5; doctype_issn=6;
     lang=7; n_citation=8; issue=9; url=10; volume=11; page_start=12;
@@ -365,11 +367,11 @@ BEGIN{
 
 $lang~/en/ && $year!~/null/ && $year < 2020 
 && $keywords!~/null/ && $n_citation!~/null/ && $n_citation>max[$year]{
-    max[$year]=$n_citation; a[$year]=$keywords
+    max[$year] = $n_citation; a[$year]=$keywords
 }
 
 END{
-    n=asorti(a,b)
+    n = asorti(a,b)
     for (i=1;i<=n;i++) print b[i], a[b[i]], max[b[i]]
 }
 
@@ -443,7 +445,7 @@ app (file out) myawk (file awkprog, file infile, file stopwords, string yr){
     "/usr/bin/awk" "-v" yr "-f" awkprog stopwords infile @stdout=out
 }
 
-file aminer[]=glob("/dev/shm/aminer_mag_papers/*.txt");
+file aminer[] = glob("/dev/shm/aminer_mag_papers/*.txt");
 
 foreach y in [1800:2017:1]{
     file yearfiles[];
