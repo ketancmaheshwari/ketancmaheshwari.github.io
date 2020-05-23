@@ -16,7 +16,7 @@ Presenting the solution I worked on in 2018 to a Data Challenge organized at [wo
 
 ## Software 
 
-**Awk** is dominantly used for the bulk of processing. Syntax of awk programs is known to be terse and hard to read by some accounts. I have taken special care to make the programs as readable as possible. Argonne National Laboratory developed parallel scripting tool called [Swift](http://swift-lang.org/Swift-T) (not to be confused with Apple Swift) is used to run the awk programs in parallel over the dataset to radically improve performance. Swift uses MPI based communication and load-balancing model to parallelize over shared as well as distributed memory architectures. Other Linux tools such as *sort*, *grep*, *tr*, *sed* are used as well. 
+**Awk** is dominantly used for the bulk of processing. Syntax of awk programs is known to be terse and hard to read by some accounts. I have taken special care to make the programs as readable as possible. Argonne National Laboratory developed parallel scripting tool called [Swift](http://swift-lang.org/Swift-T) (**NOT** the Apple Swift) is used to run the awk programs in parallel over the dataset to radically improve performance. Swift uses MPI based communication and load-balancing model to parallelize over shared as well as distributed memory architectures. Other Linux tools such as *sort*, *grep*, *tr*, *sed* are used as well. 
 
 ## Hardware 
 
