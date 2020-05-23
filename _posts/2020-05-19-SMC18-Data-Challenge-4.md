@@ -26,14 +26,14 @@ Fortunately, I had access to a large-memory (24 T) SGI system with 512-core Inte
 
 ## Rationale for Tools Choice 
 
-`Awk` is familiar, concise, fast, and expressive – especially for text processing applications. Traditional Linux tools are portable and available on almost all the standard Linux distributions. Alternative tools such as modern Python libraries have sometimes scaling limitations, portability concerns and learning curve. Some are still evolving. Swift is used for its speed and portability to both shared and distributed memory HPC systems.
+`Awk` is familiar, concise, fast, and expressive – especially for text processing applications. I also wanted to see how far can I go with awk -- and boy did I go far!  Alternative tools such as modern Python libraries have sometimes scaling limitations, portability concerns and learning curve. Some are still evolving. Swift is used simply because I was familiar with it and confident that it will scale well.
 
 # Data 
 
 The original [data](https://www.openacademic.ai/oag) was in two sets (*aminer* and *mag*) totaling 322 `json` files -- each file containing one million records. A file with a list of records appearing in both sets was available. An `awk` script (`src/filterdup.awk`) is used to exclude the duplicate records from the aminer dataset. As a result, it came out about 256 million (256,382,605 to be exact) unique records to be processed. The total data size is 329G. Several fields in the data are `null`. Those records were avoided where relevant. Additionally, records related to non-English publications were avoided where needed.
 
 
-```
+```c
 #!/usr/bin/env awk -f
 
 
