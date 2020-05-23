@@ -33,7 +33,7 @@ Fortunately, I had access to a large-memory (24 T) SGI system with 512-core Inte
 The original [data](https://www.openacademic.ai/oag) was in two sets (*aminer* and *mag*) totaling 322 `json` files -- each file containing one million records. A file with a list of records appearing in both sets was available. An `awk` script (`src/filterdup.awk`) is used to exclude the duplicate records from the aminer dataset. As a result, it came out about 256 million (256,382,605 to be exact) unique records to be processed. The total data size is 329G. Several fields in the data are `null`. Those records were avoided where relevant. Additionally, records related to non-English publications were avoided where needed.
 
 
-```c
+```bash
 #!/usr/bin/env awk -f
 
 
@@ -68,7 +68,7 @@ In addition to the existing data, I use four lists:
 
 ## Preprocessing and Curation
 
-[jq](https://stedolan.github.io/jq) is used to transform json data to tabular format (`src/json2tabular.sh`). The json files were converted to tabular files with 19 original columns and one additional column called num_authors showing the number of authors for a given publication record. The authors field has a semi-colon separator for multiple authors. Further curation of tabular data is done by removing extraneous space, square brackets, escape characters and quotes using `sed`.
+jq is used to transform json data to tabular format (`src/json2tabular.sh`). The json files were converted to tabular files with 19 original columns and one additional column called *num_authors* showing the number of authors for a given publication record. The authors field has a semi-colon separator for multiple authors. Further curation of tabular data is done by removing extraneous space, square brackets, escape characters and quotes using `sed`.
 
 ## Scaling up
 
@@ -384,7 +384,8 @@ The third approach finds the top 10 most frequently occurring terms each year to
 #!/usr/bin/env awk -f
 
 # find the top 10 trending topics yearwise and see how they appear/disappear in the trend
-# We achieve this by writing keywords, titles and abstract to files named after the year they appeared and do postprocessing on those files
+# We achieve this by writing keywords, titles and abstract to files named after 
+# the year they appeared and do postprocessing on those files
 BEGIN{
     FS = "qwqw"
     IGNORECASE = 1
@@ -398,7 +399,8 @@ BEGIN{
 NR==FNR{x[$1];next}
 
 $lang~/en/ && $n_citation>0 && $year==yr && $keywords!~/null/{
-    # write title, keywords and abstract to a file titled by the year in which they appear
+    # write title, keywords and abstract to a file 
+    # titled by the year in which they appear
     # treat title
     $title = tolower($title)
     split($title, a, " ")
@@ -421,11 +423,12 @@ $lang~/en/ && $n_citation>0 && $year==yr && $keywords!~/null/{
 }
 
 #Do the following for postprocessing:
-#for i in 18?? 19?? 20??; do (grep -o -E '\w+' $i | tr [A-Z] [a-z] \
-                             | sed -e 's/null//g' -e 's/^.$//g' -e 's/^..$//g' -e 's/^[0-9]*$//g' \
-                             | awk NF | fgrep -v -w -f stop_words.txt \
-                             | sort | uniq -c | sort -nr \
-                             | head -10 > trending/trending.$i.txt) & done
+#for i in 18?? 19?? 20??
+ do (grep -o -E '\w+' $i | tr [A-Z] [a-z] \
+     | sed -e 's/null//g' -e 's/^.$//g' -e 's/^..$//g' -e 's/^[0-9]*$//g' \
+     | awk NF | fgrep -v -w -f stop_words.txt \
+     | sort | uniq -c | sort -nr \
+     | head -10 > trending/trending.$i.txt) & done
 ```
 
 Parallelizing the third approach was challenging because it involved a two-level parallel nested foreach loop. The outer loop iterates over the years and the inner loop iterates over the input files. The parallel implementation finishes in **48 minutes**. Swift code for this shown below.
