@@ -5,14 +5,14 @@ date:   2020-05-19 16:01:40 -0400
 categories: jekyll update
 ---
 
-# Tl;Dr
-Awk to process science publications data; HPC parallel scripting to parallelize Awk calls. Fast and scalable solutions on a fat machine.
+# TL;DR
+Awk to process scientific publications data; HPC parallel scripting to parallelize Awk calls. Fast and scalable solution on a fat machine.
 
 # Introduction
 
-Presenting the solution I did in 2018 to a Data Challenge organized at [work](https://smc-datachallenge.ornl.gov/challenges-2018/). I solve Scientific Pub Mining (no. 4) challenge by combining classic Linux tools with a modern scalable HPC parallel scripting solution.
+Presenting the solution I worked on in 2018 to a Data Challenge organized at [work](https://smc-datachallenge.ornl.gov/challenges-2018/). I solve Scientific Pub Mining (no. 4) challenge by combining classic Linux tools with a modern scalable HPC parallel scripting solution.
 
-Find more at [github](https://github.com/ketancmaheshwari/SMC18). The source code for the core solutions are in `src/prob*.awk`. The source code for the HPC parallelization of the core solutions are in `src/runprob*.swift`. Results are in the `results` directory.
+Details available at [github](https://github.com/ketancmaheshwari/SMC18). The source code for the core solutions are in `src/prob*.awk`. The source code for the HPC parallelization of the core solutions are in `src/runprob*.swift`. Results are in the `results` folder.
 
 # Tools used 
 
@@ -30,7 +30,7 @@ Awk is familiar, concise, fast, and expressive – especially for text processin
 
 # Data 
 
-The original [data](https://www.openacademic.ai/oag) was in two sets (*aminer* and *mag*) of 322 `json` files -- each containing a million records. A file with a list of records appearing in both sets was available. An awk script (`src/filterdup.awk`) is used to exclude the duplicate records from the aminer dataset. As a result, it came out about 256 million (256,382,605 to be exact) unique records to be processed. The total data size is 329GB. Some fields in the data are *null*. Those records are avoided where relevant. Additionally, records related to non-English publications were avoided as needed.
+The original [data](https://www.openacademic.ai/oag) was in two sets (*aminer* and *mag*) of 322 `json` files -- each containing a million records. A file with a list of records appearing in both sets was available. An awk script (`src/filterdup.awk`) is used to exclude the duplicate records from the aminer dataset. As a result, it came out about 256 million (256,382,605 to be exact) unique records to be processed. The total data size is 329GB. Some fields in the data are *null*. Those records are avoided where relevant. Additionally, records related to non-English publications were avoided as needed. A [snapshot](https://github.com/ketancmaheshwari/SMC18/blob/master/data/aminer_papers_sample.allcols.excl.txt) of tabular data is available. String `qwqw` is chosen as a column separator to distinguish it from text already found in data. All other 3 or less character combinations already existed in data prohibiting them to be used as separators.
 
 
 ```bash
@@ -217,7 +217,7 @@ END{
 
 The parallel implementation (code shown below) finishes in **9 minutes**.
 
-```C
+```c
 import files;
 import unix;
 
@@ -433,7 +433,7 @@ $lang~/en/ && $n_citation>0 && $year==yr && $keywords!~/null/{
 
 Parallelizing the third approach was challenging as it involved a two-level parallel nested foreach loop. The outer loop iterates over the years and the inner loop iterates over the input files. The parallel implementation finishes in **48 minutes**. Swift code for this shown below.
 
-```C
+```c
 import files;
 import io;
 import unix;
