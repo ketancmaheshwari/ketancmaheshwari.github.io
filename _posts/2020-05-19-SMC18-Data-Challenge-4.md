@@ -67,15 +67,17 @@ In addition to the existing data, I use four lists:
 
 # Solutions 
 
-## Preprocessing and Curation
+## Pre- and post-processing
 
-jq is used to transform the json data to tabular format (`src/json2tabular.sh`). The converted tabular files has 19 original columns (*id*, *title*, *authors*, *year*, *ISBN*,  etc) and one additional column called *num_authors* showing the number of authors for a given publication record. The authors column has a semi-colon separator for multiple authors. Further curation of tabular data is done by removing extraneous space, square brackets, escape characters and quotes using *sed*.
+`jq` is used to transform the json data to tabular format (`src/json2tabular.sh`). The converted tabular files has 19 original columns (*id*, *title*, *authors*, *year*, *ISBN*,  etc) and one additional column called *num_authors* showing the number of authors for a given publication record. The authors column has a semi-colon separator for multiple authors. Further curation of tabular data is done by removing extraneous space, square brackets, escape characters and quotes using `sed`.
+
+Some of the results obtained were postprocessed for visulization using the `D3` graphics framework and `ffmpeg` libraries.
 
 ## Scaling up
 
 Each solution is run in parallel over the 322 data files on 322 CPU cores using Swift. This resulted in radical speedup at scale. None of the solution has taken more than an hour of runtime–some even less than a minute.
 
-## Challenge1 
+## Challenge 1 
 
 *Identify the individual or group of individuals who appear to be the expert in a particular field or sub-field.*
 
@@ -151,7 +153,7 @@ END{
 ```
 Along side is a result of a query for all-time list of most cited papers with a threshold of 20,000 in `results/top_papers.txt`. The parallel implementation of the solution finishes in **25 seconds**.
 
-## Challenge2 
+## Challenge 2 
 
 *Identify topics that have been researched across all publications.*
 
@@ -244,9 +246,9 @@ file joined <"joined.txt"> = cat(outfiles);
 */
 ```
 
-## Challenge3 
+## Challenge 3 
 
-*visualize the geographic distribution of the topics in the publications.*
+*Visualize the geographic distribution of the topics in the publications.*
 
 This is solved by identifying the author affiliations for the records that has the search topic in them. The affiliation is searched against three databases–cities, universities and countries to find out the geographic locations for that research. The results are aggregated to present a list of centers for which a given keyword appears most frequently. For cities, the results are plotted on world map. One such example is shown [here](https://github.com/ketancmaheshwari/SMC18/blob/master/results/bird_research_cities.png) for the topic "birds". The `results/` directory contains other similar results such as epilepsy, opioid, meditation research by universities and by countries. The parallel implementation finishes in **25 seconds**. The awk code is shown below.
 
@@ -299,12 +301,12 @@ END{
 # sort -nr -k 1 citywise_papers.txt > tmp && mv tmp citywise_papers.txt 
 # OR
 # After running the swift app:
-#awk -F: '{a[$2]+=$1} END{for (k in a) print a[k],k}' joined_cities.txt \
+# awk -F: '{a[$2]+=$1} END{for (k in a) print a[k],k}' joined_cities.txt \
          | sort -nr > tmp && mv tmp joined_cities.txt
 
 ```
 
-## Challenge4 
+## Challenge 4 
 
 *Identify how topics have shifted over time.*
 
@@ -314,7 +316,7 @@ This problem may be solved in three distinct ways. The first approach processes 
 #!/usr/bin/env awk -f
 
 # Problem Statement
-#    Identify how topics have shifted over time.
+# Identify how topics have shifted over time.
 
 # Solution 1 below will search for any two topics
 # mentioned and show the number of occurence of both the topics yearwise
@@ -377,7 +379,7 @@ END{
 }
 
 # Run via Swift in parallel. If serial, run like so:
-#awk -f code/prob4_p2.awk aminer_mag_papers/*.txt > yearwise_trending_keywords.txt
+# awk -f code/prob4_p2.awk aminer_mag_papers/*.txt > yearwise_trending_keywords.txt
 
 ```
 
@@ -393,6 +395,7 @@ The third approach finds the top 10 most frequently occurring terms each year to
 BEGIN{
     FS = "qwqw"
     IGNORECASE = 1
+
     # Field names
     id=1; title=2; num_authors=3; doi=4; fos_isbn=5; doctype_issn=6;
     lang=7; n_citation=8; issue=9; url=10; volume=11; page_start=12;
@@ -459,7 +462,7 @@ foreach y in [1800:2017:1]{
 }
 ```
 
-## Challenge5 
+## Challenge 5 
 
 *Given a research proposal, determine whether the proposed work has been accomplished previously.*
 
@@ -494,9 +497,6 @@ $0~topic1 && $0~topic2 && $0~topic3 && $0~topic4 && $lang~/en/ && $authors!~/nul
 }
 ```
 
-## Postprocessing 
-
-Some results were postprocessed for sorting and merging purposes using Linux `sort` which took negligible time. Some of the results obtained were postprocessed for visulization using the [D3](d3js.org) graphics framework and `ffmpeg` libraries.
 
 # Summary 
 
