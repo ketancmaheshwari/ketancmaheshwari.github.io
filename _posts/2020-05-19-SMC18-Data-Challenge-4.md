@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Processing 256M publications records using Awk and parallel scripting"
+title:  "Processing 256M scientific publications records using Awk and parallel scripting"
 date:   2020-05-19 16:01:40 -0400
 categories: jekyll update
 ---
@@ -65,7 +65,7 @@ In addition to the publications data, I use the following:
 
 ## Pre- and post-processing
 
-`jq` is used to transform the json data to tabular format (`src/json2tabular.sh`). The converted tabular files has 19 original columns (*id*, *title*, *authors*, *year*, *ISBN*,  etc) and one additional column called *num_authors* showing the number of authors for a given publication record. The authors column has a semi-colon separator for multiple authors. Further curation of tabular data is done by removing extraneous space, square brackets, escape characters and quotes using `sed`.
+`jq` is used to transform the json data to tabular format (`src/json2tabular.sh`). The converted tabular files has 19 original columns (**id**, **title**, **authors**, **year**, **citations**,  etc) and one additional column called **num_authors** showing the number of authors for a given publication record. The authors column has a semi-colon separator for multiple authors. Further curation of tabular data is done by removing extraneous space, square brackets, escape characters and quotes using `sed`.
 
 Some of the results obtained were postprocessed for visulization using the `D3` graphics framework and `ffmpeg` libraries.
 
