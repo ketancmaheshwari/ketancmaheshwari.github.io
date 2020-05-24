@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Processing 256M scientific publications records using Awk and parallel scripting
-date: 2020-05-19 16:01:40 -0400
+date: 2020-05-24 
 categories: blog
 ---
 
@@ -16,7 +16,7 @@ Presenting the solution I worked on in 2018 to a Data Challenge organized at [wo
 
 ## Software 
 
-**Awk** is dominantly used for the bulk of processing. Syntax of awk programs is known to be terse and hard to read by some accounts. I have taken special care to make the programs as readable as possible. Argonne National Laboratory developed parallel scripting tool called [Swift](http://swift-lang.org/Swift-T) (**NOT** the Apple Swift) is used to run the awk programs in parallel over the dataset to radically improve performance. Swift uses MPI based communication and load-balancing model to parallelize over shared as well as distributed memory architectures. Other Linux tools such as *sort*, *grep*, *tr*, *sed* are used as well. 
+**Awk** is dominantly used for the bulk of processing. Syntax of awk programs is known to be terse and hard to read by some accounts. I have taken special care to make the programs as readable as possible. Argonne National Laboratory developed parallel scripting tool called [Swift](http://swift-lang.org/Swift-T) (**NOT** the Apple Swift) is used to run the awk programs in parallel over the dataset to radically improve performance. Swift uses MPI based communication and load-balancing to parallelize over shared as well as distributed memory architectures. Other Linux tools such as *sort*, *grep*, *tr*, *sed* are used as well. 
 
 ## Hardware 
 
@@ -28,7 +28,7 @@ Awk is familiar, concise, fast, and expressive – especially for text processin
 
 # Data 
 
-The original [data](https://www.openacademic.ai/oag) was in two sets (*aminer* and *mag*) of 322 `json` files -- each containing a million records. A file with a list of records appearing in both sets was available. An awk script (`src/filterdup.awk`) is used to exclude the duplicate records from the aminer dataset. As a result, it came out about 256 million (256,382,605 to be exact) unique records to be processed. The total data size is 329GB. Some fields in the data are *null*. Those records are avoided where relevant. Additionally, records related to non-English publications were avoided as needed. A [snapshot](https://github.com/ketancmaheshwari/SMC18/blob/master/data/aminer_papers_sample.allcols.excl.txt) of tabular data is available. String `qwqw` is chosen as a column separator to distinguish it from text already found in data. All other 3 or less character combinations already existed in data prohibiting them to be used as separators.
+The original [data](https://www.openacademic.ai/oag) was in two sets (*aminer* and *mag*) of 322 `json` files -- each containing a million records. A file with a list of records appearing in both sets was available. An awk script (`src/filterdup.awk`) is used to exclude the duplicate records from the aminer dataset. As a result, it came out about **256 million** (256,382,605 to be exact) unique records to be processed. The total data size is 329GB. Some fields in the data are *null*. Those records are avoided where relevant. Additionally, records related to non-English publications were avoided as needed. A [snapshot](https://github.com/ketancmaheshwari/SMC18/blob/master/data/aminer_papers_sample.allcols.excl.txt) of tabular data is available. String `qwqw` is chosen as a column separator to distinguish it from text already found in data. All other 3 or less character combinations already existed in data prohibiting them to be used as separators.
 
 
 ```bash
@@ -73,7 +73,7 @@ Some of the results obtained were postprocessed for visulization using the `D3` 
 
 Each solution is run in parallel over the 322 data files on 322 CPU cores using Swift. This resulted in radical speedup at scale. None of the solution has taken more than an hour of runtime–some even less than a minute.
 
-## Challenge 1 
+### Challenge 1 
 
 *Identify the individual or group of individuals who appear to be the expert in a particular field or sub-field.*
 
@@ -149,9 +149,9 @@ END{
 ```
 The parallel implementation of this solution finishes in **25 seconds**.
 
-Alongside is the citation **network graph** of the most cited paper in this [diagram](https://github.com/ketancmaheshwari/SMC18/blob/master/results/best_papers.svg). The result of a query for all-time list of most cited papers with a threshold of 20,000 is in `results/top_papers.txt`. 
+Alongside is the citation **network graph** of the most cited paper in this [diagram](https://github.com/ketancmaheshwari/SMC18/blob/master/results/best_papers.svg)(too big to fit here). The result of a query for all-time list of most cited papers with a threshold of 20,000 is in `results/top_papers.txt`. 
 
-## Challenge 2 
+### Challenge 2 
 
 *Identify topics that have been researched across all publications.*
 
@@ -218,7 +218,7 @@ END{
 
 ```
 
-The parallel implementation (code shown below) finishes in **9 minutes**.
+The parallel implementation (Swift code shown below) finishes in **9 minutes**.
 
 ```c
 import files;
@@ -244,7 +244,7 @@ file joined <"joined.txt"> = cat(outfiles);
 */
 ```
 
-## Challenge 3 
+### Challenge 3 
 
 *Visualize the geographic distribution of the topics in the publications.*
 
@@ -310,7 +310,7 @@ END{
 
 ```
 
-## Challenge 4 
+### Challenge 4 
 
 *Identify how topics have shifted over time.*
 
@@ -473,7 +473,7 @@ foreach y in [1800:2017:1]{
 }
 ```
 
-## Challenge 5 
+### Challenge 5 
 
 *Given a research proposal, determine whether the proposed work has been accomplished previously.*
 
@@ -511,5 +511,5 @@ $0~topic1 && $0~topic2 && $0~topic3 && $0~topic4 && $lang~/en/ && $authors!~/nul
 
 # Summary 
 
-In this work I show how the classical Linux tools may be leveraged to solve modern problems. I show that hundreds of millions of records may be processed in under a minute at scale. I show the results that offer insight into the data without employing any formal sophisticated algorithms. I am sure more sophisticated tools could be used to get refined results and gain better insights -- this is my take. I won the data challenge contest that year. 
+In this work I show how the classical Linux tools may be leveraged to solve modern problems. I show that millions of records may be processed in under a minute at scale. I show the results that offer insight into the data without employing any formal sophisticated algorithms. I am sure more sophisticated tools could be used to get refined results and gain better insights -- this is my take. I won the data challenge contest that year. 
 
