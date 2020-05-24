@@ -67,7 +67,7 @@ In addition to the publications data, I use the following:
 
 `jq` is used to transform the json data to tabular format (`src/json2tabular.sh`). The converted tabular files has 19 original columns (**id**, **title**, **authors**, **year**, **citations**,  etc) and one additional column called **num_authors** showing the number of authors for a given publication record. The authors column has a semi-colon separator for multiple authors. Further curation of tabular data is done by removing extraneous space, square brackets, escape characters and quotes using `sed`.
 
-Some of the results obtained were postprocessed for visulization using the `D3` graphics framework and `ffmpeg` libraries.
+Some of the results obtained were postprocessed for visulization using the `D3` graphics framework, `ffmpeg` libraries and `dot/graphviz` tool.
 
 ## Scaling up
 
@@ -147,7 +147,9 @@ END{
 # awk -v topic=cancer -f src/prob1_p2.awk data/mag_papers_sample.allcols.txt
 # sort the results
 ```
-Along side is a result of a query for all-time list of most cited papers with a threshold of 20,000 in `results/top_papers.txt`. The parallel implementation of the solution finishes in **25 seconds**.
+The parallel implementation of this solution finishes in **25 seconds**.
+
+Alongside is the citation **network graph** of the most cited paper in this [diagram](https://github.com/ketancmaheshwari/SMC18/blob/master/results/best_papers.svg). The result of a query for all-time list of most cited papers with a threshold of 20,000 is in `results/top_papers.txt`. 
 
 ## Challenge 2 
 
@@ -246,12 +248,11 @@ file joined <"joined.txt"> = cat(outfiles);
 
 *Visualize the geographic distribution of the topics in the publications.*
 
-This is solved by identifying the author affiliations for the records that has the search topic in them. The affiliation is searched against three databases–cities, universities and countries to find out the geographic locations for that research. The results are aggregated to present a list of centers for which a given keyword appears most frequently. For cities, the results are plotted on world map. One such example is shown [here](https://github.com/ketancmaheshwari/SMC18/blob/master/results/bird_research_cities.png) for the topic "birds". 
+This is solved by identifying the author affiliations for the records that has the search topic in them. The affiliation is searched against three databases–cities, universities and countries to find out the geographic locations for that research. The results are aggregated to present a list of centers for which a given keyword appears most frequently. For cities, the results are plotted on world map. One such result is shown below for the topic of research on "birds". 
 
-![alt text][bird]
+![bird research][bird]
 
-[bird]: https://github.com/ketancmaheshwari/SMC18/blob/master/results/bird_research_cities.png "Bird Research Around the World!"
-
+[bird]: https://raw.githubusercontent.com/ketancmaheshwari/SMC18/master/results/bird_research_cities.png "Bird Research Around the World!"
 
 The `results/` directory contains other similar results such as epilepsy, opioid, meditation research by universities and by countries. The parallel implementation finishes in **25 seconds**. The awk code is shown below.
 
@@ -386,7 +387,13 @@ END{
 
 ```
 
-The third approach finds the top 10 most frequently occurring terms each year to find how the topics get in and out of trend over the years. An mkv animation video showing a bubble plot of words trending between the year 1800 and 2017 is [here](https://github.com/ketancmaheshwari/SMC18/blob/master/results/freqwordsoveryears.mkv?raw=true). A file list of all the words is found in `results/trending_words_by_year`.
+The third approach finds the top 10 most frequently occurring terms each year to find how the topics get in and out of trend over the years. An mkv animation video showing a bubble plot of words trending between the year 1800 and 2017 is [here](https://github.com/ketancmaheshwari/SMC18/blob/master/results/freqwordsoveryears.mkv?raw=true). A file list of all the words is found in `results/trending_words_by_year`. A snapshot trending words bubble in 2002 is shown below:
+
+![trending bubble 2020][bubble]
+
+[bubble]: https://raw.githubusercontent.com/ketancmaheshwari/SMC18/master/results/trending_words_by_year/2002.png "top 10 research words in 2002"
+
+The awk code that generates the raw data for above picture is shown below:
 
 ```bash
 #!/usr/bin/env awk -f
@@ -504,5 +511,5 @@ $0~topic1 && $0~topic2 && $0~topic3 && $0~topic4 && $lang~/en/ && $authors!~/nul
 
 # Summary 
 
-In this work I show how the classical Linux tools may be leveraged to solve modern problems. I show that hundreds of millions of records may be processed in under a minute at scale. I show the results that offer insight into the data without employing any formal sophisticated algorithms. I am sure more sophisticated tools could be used to get refined results and gain better insights but this is my take. I won the data challenge contest that year.  
+In this work I show how the classical Linux tools may be leveraged to solve modern problems. I show that hundreds of millions of records may be processed in under a minute at scale. I show the results that offer insight into the data without employing any formal sophisticated algorithms. I am sure more sophisticated tools could be used to get refined results and gain better insights -- this is my take. I won the data challenge contest that year. 
 
