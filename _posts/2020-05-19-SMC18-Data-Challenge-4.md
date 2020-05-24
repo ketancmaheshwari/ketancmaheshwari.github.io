@@ -10,13 +10,17 @@ Awk to process scientific publications data; HPC parallel scripting to paralleli
 
 # Introduction
 
-Presenting the solution I worked on in 2018 to a Data Challenge organized at [work](https://smc-datachallenge.ornl.gov/challenges-2018/). I solve Scientific Pub Mining (no. 4) challenge by combining classic Linux tools with a modern scalable HPC parallel scripting solution. The project is hosted on [github](https://github.com/ketancmaheshwari/SMC18). 
+Presenting the solution I worked on in 2018 to a Data Challenge organized at [work](https://smc-datachallenge.ornl.gov/challenges-2018/). I solve Scientific Publications Mining challenge (no.4) that consists of 5 problems. I use classic Linux tools with a modern scalable HPC parallel scripting tool to work out their solutions. The project is hosted on [github](https://github.com/ketancmaheshwari/SMC18). 
 
 # Tools used 
 
 ## Software 
 
-**Awk** is dominantly used for the bulk of processing. Syntax of awk programs is known to be terse and hard to read by some accounts. I have taken special care to make the programs as readable as possible. Argonne National Laboratory developed parallel scripting tool called [Swift](http://swift-lang.org/Swift-T) (**NOT** the Apple Swift) is used to run the awk programs in parallel over the dataset to radically improve performance. Swift uses MPI based communication to parallelize and synchronize independent tasks. Other Linux tools such as *sort*, *grep*, *tr*, *sed* are used as well. 
+**Awk** is dominantly used for the bulk of processing. 
+
+Argonne National Laboratory developed parallel scripting tool called [Swift](http://swift-lang.org/Swift-T) (**NOT** the Apple Swift) is used to run the awk programs in parallel over the dataset to radically improve performance. Swift uses MPI based communication to parallelize and synchronize independent tasks. 
+
+Other Linux tools such as *sort*, *grep*, *tr*, *sed* and *bash* are used as well. Additionally, *jq*, *D3*, *dot/graphviz*, and *ffmpeg* are used.
 
 ## Hardware 
 
@@ -24,7 +28,7 @@ Fortunately, I had access to a large-memory (24 T) SGI system with 512-core Inte
 
 ## Rationale for Tools Choice 
 
-Awk is familiar, concise, fast, and expressive – especially for text processing applications. I also wanted to see how far can I go with awk -- and boy did I go far!  Alternative tools such as modern Python libraries have sometimes scaling limitations, portability concerns and learning curve. Some are still evolving. Swift is used simply because I was familiar with it and confident that it will scale well in this case.
+Awk is familiar, concise, fast, and expressive – especially for text processing applications. Syntax of awk programs is known to be terse and hard to read by some accounts. I have taken special care to make the programs as readable as possible. I also wanted to see how far can I go with awk (and boy did I go far!). Alternative tools such as modern Python libraries have sometimes scaling limitations, portability concerns and learning curve. Some are still evolving. Swift is used simply because I was familiar with it and confident that it will scale well in this case.
 
 # Data 
 
@@ -53,11 +57,11 @@ NR == FNR{a[$2] = $1}
 
 In addition to the publications data, I use the following: 
 
-1) A list of large cities (pop 100K+) and their lat-long coordinates (3,517) 
+1) A list of large cities (pop 100K+) and their lat-long coordinates (3,517). 
 
-2) A list of countries (190) 
+2) A list of countries (190).
 
-3) A list of world universities and research institutes (8,984) 
+3) A list of world universities and research institutes (8,984).
 
 4) A list of stop-words to avoid in some of the results (161 words).
 
@@ -65,15 +69,15 @@ In addition to the publications data, I use the following:
 
 ## Pre- and post-processing
 
-`jq` is used to transform the json data to tabular format (`src/json2tabular.sh`). The converted tabular files has 19 original columns (**id**, **title**, **authors**, **year**, **citations**,  etc) and one additional column called **num_authors** showing the number of authors for a given publication record. The authors column has a semi-colon separator for multiple authors. Further curation of tabular data is done by removing extraneous space, square brackets, escape characters and quotes using `sed`.
+`jq` is used to transform the json data to tabular format (`src/json2tabular.sh`). The converted tabular files have 19 original columns (**id**, **title**, **authors**, **year**, **citations**,  etc) and one additional column called **num_authors** showing the number of authors for a given publication record. The authors column has a semi-colon separator for multiple authors. Further curation of tabular data is done by removing extraneous space, square brackets, escape characters and quotes using `sed`.
 
-Some of the results obtained were postprocessed for visulization using the `D3` graphics framework, `ffmpeg` libraries and `dot/graphviz` tool.
+Some of the results obtained were postprocessed for visulization using the `D3` graphics framework. `ffmpeg` is used to stitch images of trending terms to create an animation. `dot/graphviz` is used to build the massive citation network graph of the best paper.
 
 ## Scaling up
 
 Each solution is run in parallel over the 322 data files on 322 CPU cores using Swift. This resulted in radical speedup at scale. None of the solution has taken more than an hour of runtime–some even less than a minute.
 
-### Challenge 1 
+### Problem 1 
 
 *Identify the individual or group of individuals who appear to be the expert in a particular field or sub-field.*
 
@@ -149,13 +153,13 @@ END{
 ```
 The parallel implementation of this solution finishes in **25 seconds**.
 
-Alongside is the citation **network graph** of the most cited paper in this [diagram](https://github.com/ketancmaheshwari/SMC18/blob/master/results/best_papers.svg)(too big to fit here). The result of a query for all-time list of most cited papers with a threshold of 20,000 is in `results/top_papers.txt`. 
+Alongside is the citation **network graph** of the most cited paper in this [diagram](https://raw.githubusercontent.com/ketancmaheshwari/SMC18/15b0519d789b0e4b86f66b6bb6199fe24c1a4730/results/best_papers.svg) (too big to fit here). The result of a query for all-time list of most cited papers with a threshold of 20,000 is in `results/top_papers.txt`. 
 
-### Challenge 2 
+### Problem 2 
 
 *Identify topics that have been researched across all publications.*
 
-This is solved by identifying most frequently appearing words in the collection. Title, abstract and keywords are parsed and top 1,000 frequently occuring words across the whole collection is found. Several common words (aka *stop-words*) are filtered from the results. At over 23 million, the word "patients" has most frequent occurrence. The full list of top 1,000 words is found in `/results/top_1K_words_kw_abs_title.txt`. The target collection of publications may be narrowed down to criterions such as years range.
+This is solved by identifying most frequently appearing words in the collection. Title, abstract and keywords are parsed and top 1,000 frequently occuring words across the whole collection is found. Several common words (aka *stop-words*) are filtered from the results. At over 23 million, the word "patients" has most frequent occurence. The full list of top 1,000 words is found in `/results/top_1K_words_kw_abs_title.txt`. The target collection of publications may be narrowed down to criterions such as years range.
 
 ```bash
 #!/usr/bin/env awk -f
@@ -244,7 +248,7 @@ file joined <"joined.txt"> = cat(outfiles);
 */
 ```
 
-### Challenge 3 
+### Problem 3 
 
 *Visualize the geographic distribution of the topics in the publications.*
 
@@ -310,7 +314,7 @@ END{
 
 ```
 
-### Challenge 4 
+### Problem 4 
 
 *Identify how topics have shifted over time.*
 
@@ -387,7 +391,7 @@ END{
 
 ```
 
-The third approach finds the top 10 most frequently occurring terms each year to find how the topics get in and out of trend over the years. An mkv animation video showing a bubble plot of words trending between the year 1800 and 2017 is [here](https://github.com/ketancmaheshwari/SMC18/blob/master/results/freqwordsoveryears.mkv?raw=true). A file list of all the words is found in `results/trending_words_by_year`. A snapshot trending words bubble in 2002 is shown below:
+The third approach finds the top 10 most frequently occuring terms each year to find how the topics get in and out of trend over the years. An mkv animation video showing a bubble plot of words trending between the year 1800 and 2017 is [here](https://github.com/ketancmaheshwari/SMC18/blob/master/results/freqwordsoveryears.mkv?raw=true). A file list of all the words is found in `results/trending_words_by_year`. A snapshot trending words bubble in 2002 is shown below:
 
 ![trending bubble 2020][bubble]
 
@@ -473,7 +477,7 @@ foreach y in [1800:2017:1]{
 }
 ```
 
-### Challenge 5 
+### Problem 5 
 
 *Given a research proposal, determine whether the proposed work has been accomplished previously.*
 
@@ -511,5 +515,13 @@ $0~topic1 && $0~topic2 && $0~topic3 && $0~topic4 && $lang~/en/ && $authors!~/nul
 
 # Summary 
 
-In this work I show how the classical Linux tools may be leveraged to solve modern problems. I show that millions of records may be processed in under a minute at scale. I show the results that offer insight into the data without employing any formal sophisticated algorithms. I am sure more sophisticated tools could be used to get refined results and gain better insights -- this is my take. I won the data challenge contest that year. 
+I show how the classical Linux tools may be leveraged to solve
+modern problems. I show that millions of records may be processed in under a
+minute at scale. Results show that offer insight into the data without
+employing sophisticated algorithms. About the data itself, it seems the
+biosciences research dominates the publications followed by perhaps physics. I
+am sure more sophisticated tools could be used to get refined results and gain
+better insights -- this is my take. I
+[won](https://twitter.com/SciDatathon/status/1120335746358026240) the data
+challenge. 
 
