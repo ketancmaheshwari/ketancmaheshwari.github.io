@@ -248,7 +248,9 @@ file joined <"joined.txt"> = cat(outfiles);
 
 This is solved by identifying the author affiliations for the records that has the search topic in them. The affiliation is searched against three databases–cities, universities and countries to find out the geographic locations for that research. The results are aggregated to present a list of centers for which a given keyword appears most frequently. For cities, the results are plotted on world map. One such example is shown [here](https://github.com/ketancmaheshwari/SMC18/blob/master/results/bird_research_cities.png) for the topic "birds". 
 
-[bird research]: https://github.com/ketancmaheshwari/SMC18/blob/master/results/bird_research_cities.png "Bird Research Around the World!"
+![alt text][bird]
+
+[bird]: https://github.com/ketancmaheshwari/SMC18/blob/master/results/bird_research_cities.png "Bird Research Around the World!"
 
 
 The `results/` directory contains other similar results such as epilepsy, opioid, meditation research by universities and by countries. The parallel implementation finishes in **25 seconds**. The awk code is shown below.
