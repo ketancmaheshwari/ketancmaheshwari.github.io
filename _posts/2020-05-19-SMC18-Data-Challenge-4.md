@@ -6,7 +6,7 @@ categories: blog
 ---
 
 ### TL;DR
-Awk to process scientific publications data; HPC parallel scripting to parallelize Awk calls. Fast and scalable solution on a fat machine.
+Awk crunches massive data; HPC parallel scripting calls hundreds of Awk concurrently. Fast and scalable in-memory solution on a fat machine.
 
 # Introduction
 
