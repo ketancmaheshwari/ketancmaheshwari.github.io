@@ -318,7 +318,13 @@ END{
 
 *Identify how topics have shifted over time.*
 
-This problem may be solved in three distinct ways. The first approach processes the database to find out year-wise occurrence of two topics. It generates a list of years and the number of times *both* topics has occurred in a single publication in that year. For example, this [result](https://github.com/ketancmaheshwari/SMC18/blob/master/results/obesity_sugar.pdf) shows how the terms "obesity" and "sugar" have trended together in publications over the years. Awk code shown below.
+This problem may be solved in three distinct ways. The first approach processes the database to find out year-wise occurrence of two topics. It generates a list of years and the number of times *both* topics has occurred in a single publication in that year. For example, the plot shown below shows how the terms "obesity" and "sugar" have trended together in publications over the years. 
+
+![obesity sugar][obesity_sugar]
+
+[obesity_sugar]: https://raw.githubusercontent.com/ketancmaheshwari/SMC18/master/results/obesity_sugar.png "papers in which obesity and sugar appears together"
+
+Awk code shown below.
 
 ```bash
 #!/usr/bin/env awk -f
