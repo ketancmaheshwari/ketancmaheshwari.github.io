@@ -1,11 +1,11 @@
 ---
 layout: post
-title:  "Processing 256M scientific publications records using Awk and parallel scripting"
-date:   2020-05-19 16:01:40 -0400
-categories: jekyll update
+title: Processing 256M scientific publications records using Awk and parallel scripting
+date: 2020-05-19 16:01:40 -0400
+categories: blog
 ---
 
-# TL;DR
+### TL;DR
 Awk to process scientific publications data; HPC parallel scripting to parallelize Awk calls. Fast and scalable solution on a fat machine.
 
 # Introduction
@@ -246,7 +246,12 @@ file joined <"joined.txt"> = cat(outfiles);
 
 *Visualize the geographic distribution of the topics in the publications.*
 
-This is solved by identifying the author affiliations for the records that has the search topic in them. The affiliation is searched against three databases–cities, universities and countries to find out the geographic locations for that research. The results are aggregated to present a list of centers for which a given keyword appears most frequently. For cities, the results are plotted on world map. One such example is shown [here](https://github.com/ketancmaheshwari/SMC18/blob/master/results/bird_research_cities.png) for the topic "birds". The `results/` directory contains other similar results such as epilepsy, opioid, meditation research by universities and by countries. The parallel implementation finishes in **25 seconds**. The awk code is shown below.
+This is solved by identifying the author affiliations for the records that has the search topic in them. The affiliation is searched against three databases–cities, universities and countries to find out the geographic locations for that research. The results are aggregated to present a list of centers for which a given keyword appears most frequently. For cities, the results are plotted on world map. One such example is shown [here](https://github.com/ketancmaheshwari/SMC18/blob/master/results/bird_research_cities.png) for the topic "birds". 
+
+[bird research]: https://github.com/ketancmaheshwari/SMC18/blob/master/results/bird_research_cities.png "Bird Research Around the World!"
+
+
+The `results/` directory contains other similar results such as epilepsy, opioid, meditation research by universities and by countries. The parallel implementation finishes in **25 seconds**. The awk code is shown below.
 
 ```bash
 #!/usr/bin/env awk -f
