@@ -88,9 +88,9 @@ This is solved in two ways. First approach identifies all the entries with citat
 
 BEGIN{
 
-    # Field Seperator
+    # Field Separator
     FS = "qwqw"
-    # Output field seperator
+    # Output field separator
     OFS = "\t"
     IGNORECASE = 1
 
@@ -109,13 +109,13 @@ BEGIN{
 # awk -v topic=meditation -f src/prob1_p1.awk data/mag_papers_sample.allcols.txt
 ```
 
-The second approach finds the names of authors whose names are repeating for queried topic with atleast a certain number of citations in each entry. This gives a reasonable idea of who are the expert figures in a given research area. One such result in `results/cancer_research_topauths.txt` shows authors in cancer research with more than one publication with at least 1,000 citations. 
+The second approach finds the names of authors whose names are repeating for queried topic with at least a certain number of citations in each entry. This gives a reasonable idea of who are the expert figures in a given research area. One such result in `results/cancer_research_topauths.txt` shows authors in cancer research with more than one publication with at least 1,000 citations. 
 
 ```bash
 #!/usr/bin/env awk -f
 
 BEGIN{
-    # Field seperator
+    # Field separator
     FS = "qwqw"
     OFS = "\t"
     IGNORECASE = 1
@@ -159,7 +159,7 @@ Alongside is the citation **network graph** of the most cited paper in this [dia
 
 *Identify topics that have been researched across all publications.*
 
-This is solved by identifying most frequently appearing words in the collection. Title, abstract and keywords are parsed and top 1,000 frequently occuring words across the whole collection is found. Several common words (aka *stop-words*) are filtered from the results. At over 23 million, the word "patients" has most frequent occurence. The full list of top 1,000 words is found in `/results/top_1K_words_kw_abs_title.txt`. The target collection of publications may be narrowed down to criterions such as years range.
+This is solved by identifying most frequently appearing words in the collection. Title, abstract and keywords are parsed and top 1,000 frequently occurring words across the whole collection is found. Several common words (aka *stop-words*) are filtered from the results. At over 23 million, the word "patients" has most frequent occurrence. The full list of top 1,000 words is found in `/results/top_1K_words_kw_abs_title.txt`. The target collection of publications may be narrowed down to criterions such as years range.
 
 ```bash
 #!/usr/bin/env awk -f
@@ -267,7 +267,7 @@ The `results/` directory contains other similar results such as epilepsy, opioid
 #    visualize the geographic distribution of the topics in the publications.
 
 BEGIN{
-    # Field seperator
+    # Field separator
     FS = OFS = "qwqw"
     IGNORECASE = 1
 
@@ -318,7 +318,7 @@ END{
 
 *Identify how topics have shifted over time.*
 
-This problem may be solved in three distinct ways. The first approach processes the database to find out yearwise occurence of two topics. It generates a list of years and the number of times *both* topics has occured in a single publication in that year. For example, this [result](https://github.com/ketancmaheshwari/SMC18/blob/master/results/obesity_sugar.pdf) shows how the terms "obesity" and "sugar" have trended together in publications over the years. Awk code shown below.
+This problem may be solved in three distinct ways. The first approach processes the database to find out year-wise occurrence of two topics. It generates a list of years and the number of times *both* topics has occurred in a single publication in that year. For example, this [result](https://github.com/ketancmaheshwari/SMC18/blob/master/results/obesity_sugar.pdf) shows how the terms "obesity" and "sugar" have trended together in publications over the years. Awk code shown below.
 
 ```bash
 #!/usr/bin/env awk -f
@@ -327,7 +327,7 @@ This problem may be solved in three distinct ways. The first approach processes 
 # Identify how topics have shifted over time.
 
 # Solution 1 below will search for any two topics
-# mentioned and show the number of occurence of both the topics yearwise
+# mentioned and show the number of occurrence of both the topics year-wise
 BEGIN{
     # Field Separator
     FS = "qwqw"
@@ -354,7 +354,7 @@ END{
 
 ```
 
-The second approach finds the papers that has highest impact in each year and extracts the keywords in those papers. The impact is computed by the paper that is cited the most in that year. The result for this task are in `yearwise_trending_keywords.txt` in the form of year, keywords, citations triplet.
+The second approach finds the papers that has highest impact in each year and extracts the keywords in those papers. The impact is computed by the paper that is cited the most in that year. The result for this task are in `results/yearwise_trending_keywords.txt` in the form of year, keywords, citations triplet.
 
 ```bash
 #!/usr/bin/env awk -f
@@ -364,7 +364,7 @@ The second approach finds the papers that has highest impact in each year and ex
 
 
 # Solution 2 is to find the highest cited paper
-# yearwise and figure out the topics it was based on
+# year-wise and figure out the topics it was based on
 BEGIN{
     FS = OFS = "qwqw"
     IGNORECASE = 1
@@ -391,7 +391,7 @@ END{
 
 ```
 
-The third approach finds the top 10 most frequently occuring terms each year to find how the topics get in and out of trend over the years. An mkv animation video showing a bubble plot of words trending between the year 1800 and 2017 is [here](https://github.com/ketancmaheshwari/SMC18/blob/master/results/freqwordsoveryears.mkv?raw=true). A file list of all the words is found in `results/trending_words_by_year`. A snapshot trending words bubble in 2002 is shown below:
+The third approach finds the top 10 most frequently occurring terms each year to find how the topics get in and out of trend over the years. An mkv animation video showing a bubble plot of words trending between the year 1800 and 2017 is [here](https://github.com/ketancmaheshwari/SMC18/blob/master/results/freqwordsoveryears.mkv?raw=true). A file list of all the words is found in `results/trending_words_by_year`. A snapshot trending words bubble in 2002 is shown below:
 
 ![trending bubble 2020][bubble]
 
@@ -402,7 +402,7 @@ The awk code that generates the raw data for above picture is shown below:
 ```bash
 #!/usr/bin/env awk -f
 
-# find the top 10 trending topics yearwise and see how they appear/disappear in the trend
+# find the top 10 trending topics year-wise and see how they appear/disappear in the trend
 # We achieve this by writing keywords, titles and abstract to files named after 
 # the year they appeared and do postprocessing on those files
 
