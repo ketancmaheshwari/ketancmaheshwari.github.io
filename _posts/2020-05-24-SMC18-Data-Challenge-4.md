@@ -1,16 +1,22 @@
 ---
 layout: post
-title: Using Awk and HPC scripting to process 256M scientific publications records
+title: Using Awk and HPC scripting to process 256M records
 date: 2020-05-24 
 categories: blog
 ---
 
 ### TL;DR
-Awk crunches massive data; HPC script calls hundreds of Awk concurrently. Fast and scalable in-memory solution on a fat machine.
+Awk crunches massive data; HPC script calls hundreds of Awk concurrently. Fast
+and scalable in-memory solution on a fat machine.
 
 # Introduction
 
-Presenting the solution I worked on in 2018 to a Data Challenge organized at [work](https://smc-datachallenge.ornl.gov/challenges-2018/). I solve Scientific Publications Mining challenge (no.4) that consists of 5 problems. I use classic Linux tools with a modern scalable HPC scripting tool to work out their solutions. The project is hosted on [github](https://github.com/ketancmaheshwari/SMC18). 
+Presenting the solution I worked on in 2018 to a Data Challenge organized at
+[work](https://smc-datachallenge.ornl.gov/challenges-2018/). I solve Scientific
+Publications Mining challenge (no.4) that consists of 5 problems. I use classic
+Linux tools with a modern scalable HPC scripting tool to work out their
+solutions. The project is hosted on
+[github](https://github.com/ketancmaheshwari/SMC18). 
 
 # Tools used 
 
@@ -18,21 +24,47 @@ Presenting the solution I worked on in 2018 to a Data Challenge organized at [wo
 
 **Awk** is dominantly used for the bulk of processing. 
 
-Argonne National Laboratory developed HPC scripting tool called [Swift](http://swift-lang.org/Swift-T) (**NOT** the Apple Swift) is used to run the awk programs concurrently over the dataset to radically improve performance. Swift uses MPI based communication to parallelize and synchronize independent tasks. 
+Argonne National Laboratory developed HPC scripting tool called
+[Swift](http://swift-lang.org/Swift-T) (**NOT** the Apple Swift) is used to run
+the awk programs concurrently over the dataset to radically improve
+performance. Swift uses MPI based communication to parallelize and synchronize
+independent tasks. 
 
-Other Linux tools such as *sort*, *grep*, *tr*, *sed* and *bash* are used as well. Additionally, *jq*, *D3*, *dot/graphviz*, and *ffmpeg* are used.
+Other Linux tools such as *sort*, *grep*, *tr*, *sed* and *bash* are used as
+well. Additionally, *jq*, *D3*, *dot/graphviz*, and *ffmpeg* are used.
 
 ## Hardware 
 
-Fortunately, I had access to a large-memory (24 T) SGI system with 512-core Intel Xeon (2.5GHz) CPUs. All the IO is memory (*/dev/shm*) bound ie. the data is read from and written to */dev/shm*.
+Fortunately, I had access to a large-memory (24 T) SGI system with 512-core
+Intel Xeon (2.5GHz) CPUs. All the IO is memory (*/dev/shm*) bound ie. the data
+is read from and written to */dev/shm*.
 
 ## Rationale for Tools Choice 
 
-Awk is familiar, concise, fast, and expressive – especially for text processing applications. Syntax of awk programs is known to be terse and hard to read by some accounts. I have taken special care to make the programs as readable as possible. I also wanted to see how far can I go with awk (and boy did I go far!). Alternative tools such as modern Python libraries have sometimes scaling limitations, portability concerns and learning curve. Some are still evolving. Swift is used simply because I was familiar with it and confident that it will scale well in this case.
+Awk is familiar, concise, fast, and expressive – especially for text processing
+applications. Syntax of awk programs is known to be terse and hard to read by
+some accounts. I have taken special care to make the programs as readable as
+possible. I also wanted to see how far can I go with awk (and boy did I go
+far!). Alternative tools such as modern Python libraries have sometimes scaling
+limitations, portability concerns and learning curve. Some are still evolving.
+Swift is used simply because I was familiar with it and confident that it will
+scale well in this case.
 
 # Data 
 
-The original [data](https://www.openacademic.ai/oag) was in two sets (*aminer* and *mag*) of 322 `json` files -- each containing a million records. A file with a list of records appearing in both sets was available. An awk script (`src/filterdup.awk`) is used to exclude the duplicate records from the aminer dataset. As a result, it came out about **256 million** (256,382,605 to be exact) unique records to be processed. The total data size is 329GB. Some fields in the data are *null*. Those records are avoided where relevant. Additionally, records related to non-English publications were avoided as needed. A [snapshot](https://github.com/ketancmaheshwari/SMC18/blob/master/data/aminer_papers_sample.allcols.excl.txt) of tabular data is available. String `qwqw` is chosen as a column separator to distinguish it from text already found in data. All other 3 or less character combinations already existed in data prohibiting them to be used as separators.
+The original [data](https://www.openacademic.ai/oag) was in two sets (*aminer*
+and *mag*) of 322 `json` files -- each containing a million records. A file
+with a list of records appearing in both sets was available. An awk script
+(`src/filterdup.awk`) is used to exclude the duplicate records from the aminer
+dataset. As a result, it came out about **256 million** (256,382,605 to be
+exact) unique records to be processed. The total data size is 329GB. Some
+fields in the data are *null*. Those records are avoided where relevant.
+Additionally, records related to non-English publications were avoided as
+needed. A
+[snapshot](https://github.com/ketancmaheshwari/SMC18/blob/master/data/aminer_papers_sample.allcols.excl.txt)
+of tabular data is available. String `qwqw` is chosen as a column separator to
+distinguish it from text already found in data. All other 3 or less character
+combinations already existed in data prohibiting them to be used as separators.
 
 
 ```bash
@@ -57,31 +89,44 @@ NR == FNR{a[$2] = $1}
 
 In addition to the publications data, I use the following: 
 
-1) A list of large cities (pop 100K+) and their lat-long coordinates (3,517). 
+1. A list of large cities (population 100K+) and their lat-long coordinates (3,517). 
 
-2) A list of countries (190).
+2. A list of countries (190).
 
-3) A list of world universities and research institutes (8,984).
+3. A list of world universities and research institutes (8,984).
 
-4) A list of stop-words to avoid in some of the results (161 words).
+4. A list of stop-words to avoid in some of the results (161 words).
 
 # Solutions 
 
 ## Pre- and post-processing
 
-`jq` is used to transform the json data to tabular format (`src/json2tabular.sh`). The converted tabular files have 19 original columns (**id**, **title**, **authors**, **year**, **citations**,  etc) and one additional column called **num_authors** showing the number of authors for a given publication record. The authors column has a semi-colon separator for multiple authors. Further curation of tabular data is done by removing extraneous space, square brackets, escape characters and quotes using `sed`.
+`jq` is used to transform the json data to tabular format
+(`src/json2tabular.sh`). The converted tabular files have 19 original columns
+(**id**, **title**, **authors**, **year**, **citations**,  etc) and one
+additional column called **num_authors** showing the number of authors for a
+given publication record. The authors column has a semi-colon separator for
+multiple authors. Further curation of tabular data is done by removing
+extraneous space, square brackets, escape characters and quotes using `sed`.
 
-Some of the results obtained were postprocessed for visulization using the `D3` graphics framework. `ffmpeg` is used to stitch images of trending terms to create an animation. `dot/graphviz` is used to build the massive citation network graph of the best paper.
+Some of the results obtained were postprocessed for visulization using the `D3`
+graphics framework. `ffmpeg` is used to stitch images of trending terms to
+create an animation. `dot/graphviz` is used to build the massive citation
+network graph of the best paper.
 
 ## Scaling up
 
-Each solution has Awk code run concurrently over the 322 data files on 322 CPU cores using Swift. This resulted in radical speedup at scale. None of the solution has taken more than an hour of runtime–some even less than a minute.
+Each solution has Awk code run concurrently over the 322 data files on 322 CPU
+cores using Swift. This resulted in radical speedup at scale. None of the
+solution has taken more than an hour of runtime–some even less than a minute.
 
 ### Problem 1 
 
 *Identify the individual or group of individuals who appear to be the expert in a particular field or sub-field.*
 
-This is solved in two ways. First approach identifies all the entries with citations higher than 500 for a given search topic (`results/meditation_highly_cited.txt`).
+This is solved in two ways. First approach identifies all the entries with
+citations higher than 500 for a given search topic
+(`results/meditation_highly_cited.txt`).
 
 ```bash
 #!/usr/bin/env awk -f
@@ -109,7 +154,11 @@ BEGIN{
 # awk -v topic=meditation -f src/prob1_p1.awk data/mag_papers_sample.allcols.txt
 ```
 
-The second approach finds the names of authors whose names are repeating for queried topic with at least a certain number of citations in each entry. This gives a reasonable idea of who are the expert figures in a given research area. One such result in `results/cancer_research_topauths.txt` shows authors in cancer research with more than one publication with at least 1,000 citations. 
+The second approach finds the names of authors whose names are repeating for
+queried topic with at least a certain number of citations in each entry. This
+gives a reasonable idea of who are the expert figures in a given research area.
+One such result in `results/cancer_research_topauths.txt` shows authors in
+cancer research with more than one publication with at least 1,000 citations. 
 
 ```bash
 #!/usr/bin/env awk -f
@@ -153,13 +202,22 @@ END{
 ```
 The HPC implementation of this solution finishes in **25 seconds**.
 
-Alongside is the citation **network graph** of the most cited paper in this [diagram](https://raw.githubusercontent.com/ketancmaheshwari/SMC18/15b0519d789b0e4b86f66b6bb6199fe24c1a4730/results/best_papers.svg) (too big to fit here). The result of a query for all-time list of most cited papers with a threshold of 20,000 is in `results/top_papers.txt`. 
+Alongside is the citation **network graph** of the most cited paper in this
+[diagram](https://raw.githubusercontent.com/ketancmaheshwari/SMC18/15b0519d789b0e4b86f66b6bb6199fe24c1a4730/results/best_papers.svg)
+(too big to fit here). The result of a query for all-time list of most cited
+papers with a threshold of 20,000 is in `results/top_papers.txt`. 
 
 ### Problem 2 
 
 *Identify topics that have been researched across all publications.*
 
-This is solved by identifying most frequently appearing words in the collection. Title, abstract and keywords are parsed and top 1,000 frequently occurring words across the whole collection is found. Several common words (aka *stop-words*) are filtered from the results. At over 23 million, the word "patients" has most frequent occurrence. The full list of top 1,000 words is found in `/results/top_1K_words_kw_abs_title.txt`. The target collection of publications may be narrowed down to criterions such as years range.
+This is solved by identifying most frequently appearing words in the
+collection. Title, abstract and keywords are parsed and top 1,000 frequently
+occurring words across the whole collection is found. Several common words (aka
+*stop-words*) are filtered from the results. At over 23 million, the word
+"patients" has most frequent occurrence. The full list of top 1,000 words is
+found in `/results/top_1K_words_kw_abs_title.txt`. The target collection of
+publications may be narrowed down to criterions such as years range.
 
 ```bash
 #!/usr/bin/env awk -f
@@ -259,13 +317,21 @@ file joined <"joined.txt"> = cat(outfiles);
 
 *Visualize the geographic distribution of the topics in the publications.*
 
-This is solved by identifying the author affiliations for the records that has the search topic in them. The affiliation is searched against three databases–cities, universities and countries to find out the geographic locations for that research. The results are aggregated to present a list of centers for which a given keyword appears most frequently. For cities, the results are plotted on world map. One such result is shown below for the topic of research on "birds". 
+This is solved by identifying the author affiliations for the records that has
+the search topic in them. The affiliation is searched against three
+databases–cities, universities and countries to find out the geographic
+locations for that research. The results are aggregated to present a list of
+centers for which a given keyword appears most frequently. For cities, the
+results are plotted on world map. One such result is shown below for the topic
+of research on "birds". 
 
 ![bird research][bird]
 
 [bird]: https://raw.githubusercontent.com/ketancmaheshwari/SMC18/master/results/bird_research_cities.png "Bird Research Around the World!"
 
-The `results/` directory contains other similar results such as epilepsy, opioid, meditation research by universities and by countries. The HPC implementation finishes in **25 seconds**. The awk code is shown below.
+The `results/` directory contains other similar results such as epilepsy,
+opioid, meditation research by universities and by countries. The HPC
+implementation finishes in **25 seconds**. The awk code is shown below.
 
 ```bash
 #!/usr/bin/env awk -f
@@ -325,7 +391,12 @@ END{
 
 *Identify how topics have shifted over time.*
 
-This problem may be solved in three distinct ways. The first approach processes the database to find out year-wise occurrence of any given two topics *together*. It generates a list of years and the number of times *both* topics has occurred in a single publication in that year. For example, the plot shown below shows how the terms "obesity" and "sugar" have trended together in publications over the years. 
+This problem may be solved in three distinct ways. The first approach processes
+the database to find out year-wise occurrence of any given two topics
+*together*. It generates a list of years and the number of times *both* topics
+has occurred in a single publication in that year. For example, the plot shown
+below shows how the terms "obesity" and "sugar" have trended together in
+publications over the years. 
 
 ![obesity sugar][obesity_sugar]
 
@@ -367,7 +438,11 @@ END{
 
 ```
 
-The second approach finds the papers that has highest impact in each year and extracts the keywords in those papers. The impact is computed by the paper that is cited the most in that year. The result for this task are in `results/yearwise_trending_keywords.txt` in the form of year, keywords, citations triplet.
+The second approach finds the papers that has highest impact in each year and
+extracts the keywords in those papers. The impact is computed by the paper that
+is cited the most in that year. The result for this task are in
+`results/yearwise_trending_keywords.txt` in the form of year, keywords,
+citations triplet.
 
 ```bash
 #!/usr/bin/env awk -f
@@ -404,7 +479,12 @@ END{
 
 ```
 
-The third approach finds the top 10 most frequently occurring terms each year to find how the topics get in and out of trend over the years. An mkv animation video showing a bubble plot of words trending between the year 1800 and 2017 is [here](https://github.com/ketancmaheshwari/SMC18/blob/master/results/freqwordsoveryears.mkv?raw=true). A file list of all the words is found in `results/trending_words_by_year`. A snapshot trending words bubble in 2002 is shown below:
+The third approach finds the top 10 most frequently occurring terms each year
+to find how the topics get in and out of trend over the years. An mkv animation
+video showing a bubble plot of words trending between the year 1800 and 2017 is
+[here](https://github.com/ketancmaheshwari/SMC18/blob/master/results/freqwordsoveryears.mkv?raw=true).
+A file list of all the words is found in `results/trending_words_by_year`. A
+snapshot trending words bubble in 2002 is shown below:
 
 ![trending bubble 2020][bubble]
 
@@ -466,7 +546,10 @@ $lang~/en/ && $n_citation>0 && $year==yr && $keywords!~/null/{
 #     | head -10 > trending/trending.$i.txt) & done
 ```
 
-Parallelizing the third approach was challenging as it involved a two-level nested foreach loop. The outer loop iterates over the years and the inner loop iterates over the input files. The HPC implementation finishes in **48 minutes**. Swift code for this shown below.
+Parallelizing the third approach was challenging as it involved a two-level
+nested foreach loop. The outer loop iterates over the years and the inner loop
+iterates over the input files. The HPC implementation finishes in **48
+minutes**. Swift code for this shown below.
 
 ```c
 import files;
@@ -495,7 +578,14 @@ foreach y in [1800:2017:1]{
 
 *Given a research proposal, determine whether the proposed work has been accomplished previously.*
 
-This has a simple solution: Find the keywords on a new proposal.  If those keywords appear in an existing publication record, it is a suspect. A broad list of suspects may be found with logical **OR** between keywords which could be narrowed down with logical **AND**. The keywords may be arbitrarily combined in ORs and ANDs. The results file `/results/suspects.txt` shows over 1,400 suspects for an **AND** combination of keywords: *battery*, *electronics*, *lithium*, and *energy* from English language papers. The HPC implementation finishes in **26 seconds**. Awk code below.
+This has a simple solution: Find the keywords on a new proposal.  If those
+keywords appear in an existing publication record, it is a suspect. A broad
+list of suspects may be found with logical **OR** between keywords which could
+be narrowed down with logical **AND**. The keywords may be arbitrarily combined
+in ORs and ANDs. The results file `/results/suspects.txt` shows over 1,400
+suspects for an **AND** combination of keywords: *battery*, *electronics*,
+*lithium*, and *energy* from English language papers. The HPC implementation
+finishes in **26 seconds**. Awk code below.
 
 ```bash
 #!/usr/bin/env awk -f
@@ -529,13 +619,12 @@ $0~topic1 && $0~topic2 && $0~topic3 && $0~topic4 && $lang~/en/ && $authors!~/nul
 
 # Summary 
 
-I show how the classical Linux tools may be leveraged to solve
-modern problems. I show that millions of records may be processed in under a
-minute at scale. Results show that offer insight into the data without
-employing sophisticated algorithms. About the data itself, it seems the
-biosciences research dominates the publications followed by perhaps physics. I
-am sure more sophisticated tools could be used to get refined results and gain
-better insights -- this is my take. I
-[won](https://twitter.com/SciDatathon/status/1120335746358026240) the data
-challenge. 
+I show how the classic Linux tools may be leveraged to solve modern problems
+and that millions of records may be processed in under a minute at scale.
+Results show that offer insight into the data without employing sophisticated
+algorithms. About the data itself, it seems the biosciences research dominates
+the publications followed by perhaps physics. I am sure more sophisticated
+tools could be used to get refined results and gain better insights -- this is
+my take. I [won](https://twitter.com/SciDatathon/status/1120335746358026240)
+the data challenge. 
 
