@@ -1,16 +1,16 @@
 ---
 layout: post
-title: Processing 256M scientific publications records using Awk and parallel scripting
+title: Using Awk and HPC scripting to process 256M scientific publications records
 date: 2020-05-24 
 categories: blog
 ---
 
 ### TL;DR
-Awk crunches massive data; HPC parallel scripting calls hundreds of Awk concurrently. Fast and scalable in-memory solution on a fat machine.
+Awk crunches massive data; HPC script calls hundreds of Awk concurrently. Fast and scalable in-memory solution on a fat machine.
 
 # Introduction
 
-Presenting the solution I worked on in 2018 to a Data Challenge organized at [work](https://smc-datachallenge.ornl.gov/challenges-2018/). I solve Scientific Publications Mining challenge (no.4) that consists of 5 problems. I use classic Linux tools with a modern scalable HPC parallel scripting tool to work out their solutions. The project is hosted on [github](https://github.com/ketancmaheshwari/SMC18). 
+Presenting the solution I worked on in 2018 to a Data Challenge organized at [work](https://smc-datachallenge.ornl.gov/challenges-2018/). I solve Scientific Publications Mining challenge (no.4) that consists of 5 problems. I use classic Linux tools with a modern scalable HPC scripting tool to work out their solutions. The project is hosted on [github](https://github.com/ketancmaheshwari/SMC18). 
 
 # Tools used 
 
@@ -18,7 +18,7 @@ Presenting the solution I worked on in 2018 to a Data Challenge organized at [wo
 
 **Awk** is dominantly used for the bulk of processing. 
 
-Argonne National Laboratory developed parallel scripting tool called [Swift](http://swift-lang.org/Swift-T) (**NOT** the Apple Swift) is used to run the awk programs in parallel over the dataset to radically improve performance. Swift uses MPI based communication to parallelize and synchronize independent tasks. 
+Argonne National Laboratory developed HPC scripting tool called [Swift](http://swift-lang.org/Swift-T) (**NOT** the Apple Swift) is used to run the awk programs concurrently over the dataset to radically improve performance. Swift uses MPI based communication to parallelize and synchronize independent tasks. 
 
 Other Linux tools such as *sort*, *grep*, *tr*, *sed* and *bash* are used as well. Additionally, *jq*, *D3*, *dot/graphviz*, and *ffmpeg* are used.
 
@@ -75,7 +75,7 @@ Some of the results obtained were postprocessed for visulization using the `D3` 
 
 ## Scaling up
 
-Each solution is run in parallel over the 322 data files on 322 CPU cores using Swift. This resulted in radical speedup at scale. None of the solution has taken more than an hour of runtime–some even less than a minute.
+Each solution has Awk code run concurrently over the 322 data files on 322 CPU cores using Swift. This resulted in radical speedup at scale. None of the solution has taken more than an hour of runtime–some even less than a minute.
 
 ### Problem 1 
 
@@ -151,7 +151,7 @@ END{
 # awk -v topic=cancer -f src/prob1_p2.awk data/mag_papers_sample.allcols.txt
 # sort the results
 ```
-The parallel implementation of this solution finishes in **25 seconds**.
+The HPC implementation of this solution finishes in **25 seconds**.
 
 Alongside is the citation **network graph** of the most cited paper in this [diagram](https://raw.githubusercontent.com/ketancmaheshwari/SMC18/15b0519d789b0e4b86f66b6bb6199fe24c1a4730/results/best_papers.svg) (too big to fit here). The result of a query for all-time list of most cited papers with a threshold of 20,000 is in `results/top_papers.txt`. 
 
@@ -222,7 +222,7 @@ END{
 
 ```
 
-The parallel implementation (Swift code shown below) finishes in **9 minutes**.
+The HPC implementation (Swift code shown below) finishes in **9 minutes**.
 
 ```c
 import files;
@@ -258,7 +258,7 @@ This is solved by identifying the author affiliations for the records that has t
 
 [bird]: https://raw.githubusercontent.com/ketancmaheshwari/SMC18/master/results/bird_research_cities.png "Bird Research Around the World!"
 
-The `results/` directory contains other similar results such as epilepsy, opioid, meditation research by universities and by countries. The parallel implementation finishes in **25 seconds**. The awk code is shown below.
+The `results/` directory contains other similar results such as epilepsy, opioid, meditation research by universities and by countries. The HPC implementation finishes in **25 seconds**. The awk code is shown below.
 
 ```bash
 #!/usr/bin/env awk -f
@@ -318,7 +318,7 @@ END{
 
 *Identify how topics have shifted over time.*
 
-This problem may be solved in three distinct ways. The first approach processes the database to find out year-wise occurrence of two topics. It generates a list of years and the number of times *both* topics has occurred in a single publication in that year. For example, the plot shown below shows how the terms "obesity" and "sugar" have trended together in publications over the years. 
+This problem may be solved in three distinct ways. The first approach processes the database to find out year-wise occurrence of any given two topics *together*. It generates a list of years and the number of times *both* topics has occurred in a single publication in that year. For example, the plot shown below shows how the terms "obesity" and "sugar" have trended together in publications over the years. 
 
 ![obesity sugar][obesity_sugar]
 
@@ -458,7 +458,7 @@ $lang~/en/ && $n_citation>0 && $year==yr && $keywords!~/null/{
 #     | head -10 > trending/trending.$i.txt) & done
 ```
 
-Parallelizing the third approach was challenging as it involved a two-level parallel nested foreach loop. The outer loop iterates over the years and the inner loop iterates over the input files. The parallel implementation finishes in **48 minutes**. Swift code for this shown below.
+Parallelizing the third approach was challenging as it involved a two-level nested foreach loop. The outer loop iterates over the years and the inner loop iterates over the input files. The HPC implementation finishes in **48 minutes**. Swift code for this shown below.
 
 ```c
 import files;
@@ -487,7 +487,7 @@ foreach y in [1800:2017:1]{
 
 *Given a research proposal, determine whether the proposed work has been accomplished previously.*
 
-This has a simple solution: Find the keywords on a new proposal.  If those keywords appear in an existing publication record, it is a suspect. A broad list of suspects may be found with logical **OR** between keywords which could be narrowed down with logical **AND**. The keywords may be arbitrarily combined in ORs and ANDs. The results file `/results/suspects.txt` shows over 1,400 suspects for an **AND** combination of keywords: *battery*, *electronics*, *lithium*, and *energy* from English language papers. The parallel implementation finishes in **26 seconds**. Awk code below.
+This has a simple solution: Find the keywords on a new proposal.  If those keywords appear in an existing publication record, it is a suspect. A broad list of suspects may be found with logical **OR** between keywords which could be narrowed down with logical **AND**. The keywords may be arbitrarily combined in ORs and ANDs. The results file `/results/suspects.txt` shows over 1,400 suspects for an **AND** combination of keywords: *battery*, *electronics*, *lithium*, and *energy* from English language papers. The HPC implementation finishes in **26 seconds**. Awk code below.
 
 ```bash
 #!/usr/bin/env awk -f
