@@ -18,7 +18,7 @@ Linux tools with a modern scalable HPC scripting tool to work out the
 solutions. The project is hosted on
 [github](https://github.com/ketancmaheshwari/SMC18). 
 
-# Tools used 
+# Tools 
 
 ## Software 
 
@@ -39,7 +39,7 @@ Fortunately, I had access to a large-memory (24 T) SGI system with 512-core
 Intel Xeon (2.5GHz) CPUs. All the IO is memory (*/dev/shm*) bound ie. the data
 is read from and written to */dev/shm*.
 
-## Rationale for Tools Choice 
+### Rationale 
 
 Awk is familiar, concise, fast, and expressive – especially for text processing
 applications. Syntax of awk programs is known to be terse and hard to read by
@@ -65,7 +65,6 @@ needed. A
 of tabular data is available. String `qwqw` is chosen as a column separator to
 distinguish it from text already found in data. All other 3 or less character
 combinations already existed in data prohibiting them to be used as separators.
-
 
 ```bash
 #!/usr/bin/env awk -f
@@ -189,9 +188,7 @@ BEGIN{
    }
 }
 
-END{
-   for (k in auths) if(auths[k]>1) print auths[k], k
-}
+END{ for (k in auths) if(auths[k]>1) print auths[k], k }
 
 #How to run:
 # awk -v topic=cancer -f src/prob1_p2.awk data/mag_papers_sample.allcols.txt
@@ -274,7 +271,6 @@ END{
               ../aminer_papers_allcols_excl/aminer_papers_*.allcols.excl.txt \
               ../mag_papers_allcols/mag_papers_*.allcols.txt \
               | sort -nr > freq.txt
-
 ```
 
 The HPC implementation (Swift code shown below) finishes in **9 minutes**.
@@ -381,7 +377,6 @@ END{
 # After running the swift app:
 # awk -F: '{a[$2]+=$1} END{for (k in a) print a[k],k}' joined_cities.txt \
          | sort -nr > tmp && mv tmp joined_cities.txt
-
 ```
 
 ### Problem 4 
@@ -432,7 +427,6 @@ END{
 
 # Run as follows:
 # awk -v topic1=obesity -v topic2=sugar -f code/prob4.awk aminer_mag_papers/*.txt
-
 ```
 
 The second approach finds the papers that has highest impact in each year and
@@ -446,7 +440,6 @@ citations triplet.
 
 # Problem Statement
 #    Identify how topics have shifted over time.
-
 
 # Solution 2 is to find the highest cited paper
 # year-wise and figure out the topics it was based on
@@ -473,7 +466,6 @@ END{
 
 # Run via Swift in parallel. If serial, run like so:
 # awk -f code/prob4_p2.awk aminer_mag_papers/*.txt > yearwise_trending_keywords.txt
-
 ```
 
 The third approach finds the top 10 most frequently occurring terms each year
@@ -590,7 +582,6 @@ finishes in **26 seconds**. Awk code below.
 # Problem Statement
 #    Given a research proposal, determine whether the proposed work has been
 #    accomplished previously.
-#    
 
 # Solution: Find the keywords in the new proposal. 
 # If those keywords appear in an existing publication record, it is a suspect.
@@ -606,13 +597,11 @@ BEGIN{
     keywords=18; abstract=19; authors=20;
 }
 
-
 # topic1 .. topic4 are provided at command line
 $0~topic1 && $0~topic2 && $0~topic3 && $0~topic4 && $lang~/en/ && $authors!~/null/{
     print $id, $title, $authors, $year
 }
 ```
-
 
 # Summary 
 
