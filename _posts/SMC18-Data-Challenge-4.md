@@ -228,18 +228,25 @@ The HPC implementation (Swift code shown below) finishes in **9 minutes**.
 import files;
 import unix;
 
+/* app defines what we want to run, the input parameters,
+   where the stdout should go, etc.
+*/
 app (file out) myawk (file awkprog, file stop_words, file infile){
     "/usr/bin/awk" "-f" awkprog stop_words infile @stdout=out
 }
 
+/* populate the input data */
 file aminer[] = glob("/dev/shm/aminer_mag_papers/*.txt");
-file outfiles[];
+
+/* output for each call will be collected here */
+file outfiles[]; 
 
 foreach v, i in aminer{
     outfiles[i] = myawk(input("/home/km0/SMC18/src/prob2.awk"),
                   input("/home/km0/SMC18/data/stop_words.txt"), v);
 }
 
+/* Combine all output in one file */
 file joined <"joined.txt"> = cat(outfiles);
 
 /*
@@ -278,8 +285,8 @@ BEGIN{
     keywords=18; abstract=19; authors=20;
 }
 
-
-NR==FNR{a[$1];next} #process the countries/cities/univs data
+#collect the countries/cities/univs data
+NR==FNR{a[$1];next} 
 
 #treat records with authors whose affiliation is available
 $0~topic && $num_authors!~/null/ && $authors~/\,/{ 
@@ -423,6 +430,7 @@ BEGIN{
     keywords=18; abstract=19; authors=20;
 }
 
+#collect stop words
 NR==FNR{x[$1];next}
 
 $lang~/en/ && $n_citation>0 && $year==yr && $keywords!~/null/{
