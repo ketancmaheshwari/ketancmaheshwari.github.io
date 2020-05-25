@@ -2,7 +2,7 @@
 layout: post
 title: Using Awk and HPC scripting to process 256M records
 date: 2020-05-24 
-categories: blog
+categories: posts
 ---
 
 ### TL;DR
