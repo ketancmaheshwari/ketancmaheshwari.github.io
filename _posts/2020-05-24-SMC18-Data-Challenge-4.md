@@ -14,7 +14,7 @@ and scalable in-memory solution on a fat machine.
 Presenting the solution I worked on in 2018 to a Data Challenge organized at
 [work](https://smc-datachallenge.ornl.gov/challenges-2018/). I solve Scientific
 Publications Mining challenge (no.4) that consists of 5 problems. I use classic
-Linux tools with a modern scalable HPC scripting tool to work out their
+Linux tools with a modern scalable HPC scripting tool to work out the
 solutions. The project is hosted on
 [github](https://github.com/ketancmaheshwari/SMC18). 
 
@@ -22,7 +22,7 @@ solutions. The project is hosted on
 
 ## Software 
 
-**Awk** is dominantly used for the bulk of processing. 
+**Awk** is dominantly used for the bulk of core processing. 
 
 Argonne National Laboratory developed HPC scripting tool called
 [Swift](http://swift-lang.org/Swift-T) (**NOT** the Apple Swift) is used to run
@@ -46,22 +46,22 @@ applications. Syntax of awk programs is known to be terse and hard to read by
 some accounts. I have taken special care to make the programs as readable as
 possible. I also wanted to see how far can I go with awk (and boy did I go
 far!). Alternative tools such as modern Python libraries have sometimes scaling
-limitations, portability concerns and learning curve. Some are still evolving.
-Swift is used simply because I was familiar with it and confident that it will
-scale well in this case.
+limitations, portability concerns. Some are still evolving.  Swift is used
+simply because I was familiar with it and confident that it will scale well in
+this case.
 
 # Data 
 
 The original [data](https://www.openacademic.ai/oag) was in two sets (*aminer*
 and *mag*) of 322 `json` files -- each containing a million records. A file
-with a list of records appearing in both sets was available. An awk script
-(`src/filterdup.awk`) is used to exclude the duplicate records from the aminer
+with a list of common records appearing in both sets was available. An awk script
+(`src/filterdup.awk`) is used to exclude these duplicate records from the aminer
 dataset. As a result, it came out about **256 million** (256,382,605 to be
 exact) unique records to be processed. The total data size is 329GB. Some
 fields in the data are *null*. Those records are avoided where relevant.
 Additionally, records related to non-English publications were avoided as
 needed. A
-[snapshot](https://github.com/ketancmaheshwari/SMC18/blob/master/data/aminer_papers_sample.allcols.excl.txt)
+[snapshot](https://raw.githubusercontent.com/ketancmaheshwari/SMC18/master/data/aminer_papers_sample.allcols.excl.txt)
 of tabular data is available. String `qwqw` is chosen as a column separator to
 distinguish it from text already found in data. All other 3 or less character
 combinations already existed in data prohibiting them to be used as separators.
@@ -70,18 +70,15 @@ combinations already existed in data prohibiting them to be used as separators.
 ```bash
 #!/usr/bin/env awk -f
 
-
 # $1 magid
 # $2 aminerid
 
-#    
-#  Filter duplicate papers and remove them
-#  from aminer database based on the linking relationship 
-#    
+# Filter duplicate papers and remove them
+# from aminer database based on the linking relationship 
 
 BEGIN{FS = OFS = "qwqw"}
 
-#NR == FNR is an idiom that ensures the condition is true only for the first file
+# NR == FNR is an idiom that ensures the condition is true only for the first file
 NR == FNR{a[$2] = $1}
 
 !($1 in a) && FILENAME ~ /aminer/{ print }
