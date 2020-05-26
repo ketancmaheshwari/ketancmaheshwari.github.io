@@ -113,7 +113,7 @@ network graph of the best paper.
 
 Each solution has Awk code run concurrently over the 322 data files on 322 CPU
 cores using Swift. This resulted in radical speedup at scale. None of the
-solution has taken more than an hour of runtime–some even less than a minute.
+solution has taken more than an hour of runtime–most took less than a minute.
 
 ### Problem 1 
 
