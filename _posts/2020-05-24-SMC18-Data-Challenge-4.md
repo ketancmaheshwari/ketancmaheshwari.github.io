@@ -11,8 +11,8 @@ and scalable in-memory solution on a fat machine.
 
 # Introduction
 
-Presenting the solution I worked on in 2018 to a Data Challenge organized at
-[work](https://smc-datachallenge.ornl.gov/challenges-2018/). I solve Scientific
+Presenting the solution I worked on in 2018, to a Data Challenge organized at
+[work](https://smc-datachallenge.ornl.gov/challenges-2018/). I solve the Scientific
 Publications Mining challenge (no.4) that consists of 5 problems. I use classic
 Linux tools with a modern scalable HPC scripting tool to work out the
 solutions. The project is hosted on
@@ -41,14 +41,13 @@ is read from and written to */dev/shm*.
 
 ### Rationale 
 
-Awk is familiar, concise, fast, and expressive – especially for text processing
+Awk is lightweight, concise, expressive, and fast – especially for text processing
 applications. Syntax of awk programs is known to be terse and hard to read by
-some accounts. I have taken special care to make the programs as readable as
-possible. I also wanted to see how far can I go with awk (and boy did I go
-far!). Alternative tools such as modern Python libraries have sometimes scaling
-limitations, portability concerns. Some are still evolving.  Swift is used
-simply because I was familiar with it and confident that it will scale well in
-this case.
+some accounts. I have taken care to make the code readable. I wanted to
+see how far can I go with awk (and boy did I go far!). Alternative tools such
+as modern Python libraries have sometimes scaling limitations, portability
+concerns. Some are still evolving. Swift is used simply because I was familiar
+with it and confident that it will scale well in this case.
 
 # Data 
 
@@ -283,7 +282,7 @@ import unix;
    where the stdout should go, etc.
 */
 app (file out) myawk (file awkprog, file stop_words, file infile){
-    "/usr/bin/awk" "-f" awkprog stop_words infile @stdout=out
+  "/usr/bin/awk" "-f" awkprog stop_words infile @stdout=out
 }
 
 /* populate the input data */
@@ -293,8 +292,9 @@ file aminer[] = glob("/dev/shm/aminer_mag_papers/*.txt");
 file outfiles[]; 
 
 foreach v, i in aminer{
-    outfiles[i] = myawk(input("/home/km0/SMC18/src/prob2.awk"),
-                  input("/home/km0/SMC18/data/stop_words.txt"), v);
+  outfiles[i] = myawk(input("/home/km0/SMC18/src/prob2.awk"),
+                input("/home/km0/SMC18/data/stop_words.txt"), 
+                v);
 }
 
 /* Combine all output in one file */
@@ -520,7 +520,7 @@ $lang~/en/ && $n_citation>0 && $year==yr && $keywords!~/null/{
      # treat abstract
      $abstract = tolower($abstract)
      gsub("\"","",$abstract)
-     gsub(",","",$abstract)
+     gsub(","," ",$abstract)
      split($abstract, c, " ")
      for (i in c) if(length(c[i])>2 && match(c[i],/[a-z]/) && c[i] in x == 0) print c[i]
 
@@ -547,19 +547,20 @@ import unix;
 import string;
 
 app (file out) myawk (file awkprog, file infile, file stopwords, string yr){
-    "/usr/bin/awk" "-v" yr "-f" awkprog stopwords infile @stdout=out
+  "/usr/bin/awk" "-v" yr "-f" awkprog stopwords infile @stdout=out
 }
 
 file aminer[] = glob("/dev/shm/aminer_mag_papers/*.txt");
 
 foreach y in [1800:2017:1]{
-    file yearfiles[];
-    foreach v, i in aminer{
-        yearfiles[i] = myawk(input("/home/km0/SMC18/src/prob4_p3.awk"), \ 
-                             v, input("/home/km0/SMC18/data/stop_words.txt"), \
-                             sprintf("yr=%s",toString(y)));
-    }
-    file joined <sprintf("year%s.txt",toString(y))> = cat(yearfiles);
+  file yearfiles[];
+  foreach v, i in aminer{
+    yearfiles[i] = myawk(input("/home/km0/SMC18/src/prob4_p3.awk"),  
+                         v,
+                         input("/home/km0/SMC18/data/stop_words.txt"), 
+                         sprintf("yr=%s",toString(y)));
+  }
+  file joined <sprintf("year%s.txt",toString(y))> = cat(yearfiles);
 }
 ```
 
@@ -603,14 +604,13 @@ $0~topic1 && $0~topic2 && $0~topic3 && $0~topic4 && $lang~/en/ && $authors!~/nul
 }
 ```
 
-# Summary 
+# Conclusion 
 
 I show how the classic Linux tools may be leveraged to solve modern problems
 and that millions of records may be processed in under a minute at scale.
-Results show that offer insight into the data without employing sophisticated
-algorithms. About the data itself, it seems the biosciences research dominates
+About the data itself, it seems the biosciences research dominates
 the publications followed by perhaps physics. I am sure more sophisticated
 tools could be used to get refined results and gain better insights -- this is
 my take. I [won](https://twitter.com/SciDatathon/status/1120335746358026240)
-the data challenge. 
+the data challenge. Awk is awesome!
 
