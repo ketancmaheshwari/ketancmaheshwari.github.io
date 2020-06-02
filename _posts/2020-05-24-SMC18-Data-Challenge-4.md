@@ -24,7 +24,7 @@ contest.
 
 ## Software 
 
-**Awk** is dominantly used for the bulk of core processing. 
+**Awk** (gawk v4.0.2) is dominantly used for the bulk of core processing. 
 
 Argonne National Laboratory developed HPC scripting tool called
 [Swift](http://swift-lang.org/Swift-T) (**NOT** the Apple Swift) is used to run
