@@ -1,22 +1,24 @@
 ---
 layout: post
-title: Using Awk and HPC scripting to process 256M records
+title: Running Awk in parallel to process 256M records
 date: 2020-05-24 
 categories: posts
 ---
 
 ### TL;DR
-Awk crunches massive data; HPC script calls hundreds of Awk concurrently. Fast
-and scalable in-memory solution on a fat machine.
+Awk crunches massive data; a High Performance Computing (HPC) script calls
+hundreds of Awk concurrently. Fast and scalable in-memory solution on a fat
+machine.
 
 # Introduction
 
-Presenting the solution I worked on in 2018, to a Data Challenge organized at
-[work](https://smc-datachallenge.ornl.gov/challenges-2018/). I solve the Scientific
-Publications Mining challenge (no.4) that consists of 5 problems. I use classic
-Linux tools with a modern scalable HPC scripting tool to work out the
-solutions. The project is hosted on
-[github](https://github.com/ketancmaheshwari/SMC18). 
+Presenting the solution I worked on in 2018, to a [Data
+Challenge](https://smc-datachallenge.ornl.gov/challenges-2018/) organized at
+work. I solve the Scientific Publications Mining challenge (no.4) that consists
+of 5 problems. I use classic Unix tools with a modern scalable HPC scripting
+tool to work out the solutions. The project is hosted on
+[github](https://github.com/ketancmaheshwari/SMC18). About 12 teams entered the
+contest. 
 
 # Tools 
 
@@ -26,11 +28,11 @@ solutions. The project is hosted on
 
 Argonne National Laboratory developed HPC scripting tool called
 [Swift](http://swift-lang.org/Swift-T) (**NOT** the Apple Swift) is used to run
-the awk programs concurrently over the dataset to radically improve
+the Awk programs concurrently over the dataset to radically improve
 performance. Swift uses MPI based communication to parallelize and synchronize
 independent tasks. 
 
-Other Linux tools such as *sort*, *grep*, *tr*, *sed* and *bash* are used as
+Other Unix tools such as *sort*, *grep*, *tr*, *sed* and *bash* are used as
 well. Additionally, *jq*, *D3*, *dot/graphviz*, and *ffmpeg* are used.
 
 ## Hardware 
@@ -42,18 +44,18 @@ is read from and written to */dev/shm*.
 ### Rationale 
 
 Awk is lightweight, concise, expressive, and fast – especially for text processing
-applications. Syntax of awk programs is known to be terse and hard to read by
-some accounts. I have taken care to make the code readable. I wanted to
-see how far can I go with awk (and boy did I go far!). Alternative tools such
-as modern Python libraries have sometimes scaling limitations, portability
-concerns. Some are still evolving. Swift is used simply because I was familiar
-with it and confident that it will scale well in this case.
+applications. Some people find Awk programs terse and hard to read. I have
+taken care to make the code readable. I wanted to see how far can I go with Awk
+(and boy did I go far!). Alternative tools such as modern Python libraries
+sometimes have scaling limitations, portability concerns. Some are still
+evolving. Swift is used simply because I was familiar with it and confident
+that it will scale well in this case.
 
 # Data 
 
 The original [data](https://www.openacademic.ai/oag) was in two sets (*aminer*
 and *mag*) of 322 `json` files -- each containing a million records. A file
-with a list of common records appearing in both sets was available. An awk script
+with a list of common records appearing in both sets was available. An Awk script
 (`src/filterdup.awk`) is used to exclude these duplicate records from the aminer
 dataset. As a result, it came out about **256 million** (256,382,605 to be
 exact) unique records to be processed. The total data size is 329GB. Some
@@ -74,13 +76,13 @@ combinations already existed in data prohibiting them to be used as separators.
 # Filter duplicate papers and remove them
 # from aminer database based on the linking relationship 
 
-BEGIN{FS = OFS = "qwqw"}
+BEGIN {FS = OFS = "qwqw"}
 
-# NR == FNR is an idiom that ensures the condition is true only for the first file
-NR == FNR{a[$2] = $1}
+NR == FNR {a[$2] = $1}
 
 !($1 in a) && FILENAME ~ /aminer/{ print }
 ```
+`NR == FNR` is a cool Awk idiom that ensures the condition is true only for the first file. This is because for each file that is processed the FNR (File Record Number) gets reset but the NR does not. This means the condition `NR == FNR` yields true only for the first file.
 
 In addition to the publications data, I use the following: 
 
@@ -126,7 +128,7 @@ citations higher than 500 for a given search topic
 ```bash
 #!/usr/bin/env awk -f
 
-BEGIN{
+BEGIN {
 
     # Field Separator
     FS = "qwqw"
@@ -158,7 +160,7 @@ cancer research with more than one publication with at least 1,000 citations.
 ```bash
 #!/usr/bin/env awk -f
 
-BEGIN{
+BEGIN {
     # Field separator
     FS = "qwqw"
     OFS = "\t"
@@ -179,7 +181,7 @@ BEGIN{
    gsub("\"","",$authors)
    split($authors, a, ";")
    
-   for (i in a){
+   for (i in a) {
        split(a[i], b, ",")
        # auths array will have keys as auth names and the 
        # element value increases if the key repeats
@@ -187,7 +189,7 @@ BEGIN{
    }
 }
 
-END{ for (k in auths) if(auths[k]>1) print auths[k], k }
+END { for (k in auths) if(auths[k]>1) print auths[k], k }
 
 #How to run:
 # awk -v topic=cancer -f src/prob1_p2.awk data/mag_papers_sample.allcols.txt
@@ -208,9 +210,9 @@ This is solved by identifying most frequently appearing words in the
 collection. Title, abstract and keywords are parsed and top 1,000 frequently
 occurring words across the whole collection is found. Several common words (aka
 *stop-words*) are filtered from the results. At over 23 million, the word
-"patients" has most frequent occurrence. The full list of top 1,000 words is
+"patients" occurs the most frequently. The full list of top 1,000 words is
 found in `/results/top_1K_words_kw_abs_title.txt`. The target collection of
-publications may be narrowed down to criterions such as years range.
+publications may be narrowed down to criteria such as years range.
 
 ```bash
 #!/usr/bin/env awk -f
@@ -221,12 +223,12 @@ publications may be narrowed down to criterions such as years range.
 # Solution:
 # step1. Filter the input to English language records 
 # step2. Eliminate unnecessary content such as punctuation,
-         non-printable chars and small words such as 
-         1 letter and 2 letter words
+#        non-printable chars and small words such as 
+#        1 letter and 2 letter words
 # step3. Extract words used in keywords, title and abstract
 # step4. Find most frequently used words 
 
-BEGIN{
+BEGIN {
     FS = "qwqw"
     IGNORECASE = 1
   
@@ -238,7 +240,7 @@ BEGIN{
 }
 
 #collect stop words
-NR==FNR{x[$1];next}
+NR == FNR {x[$1];next}
 
 $lang~/en/ && ($keywords!~/null/ || $title!~/null/ || $abstract!~/null/) {
     # treat title
@@ -260,7 +262,7 @@ $lang~/en/ && ($keywords!~/null/ || $title!~/null/ || $abstract!~/null/) {
      for (i in c) if(length(c[i])>2 && match(c[i],/[a-z]/) && c[i] in x == 0) kw[c[i]]++
 }
 
-END{
+END {
     for(k in kw){
         if (kw[k]>1000) print kw[k], k
     }
@@ -302,7 +304,7 @@ file joined <"joined.txt"> = cat(outfiles);
 
 /*
  After running this swift app:
- awk '{a[$2]+=$1} END{for (k in a) print a[k],k}' joined.txt | sort -nr > freq.txt
+ awk '{a[$2]+=$1} END {for (k in a) print a[k],k}' joined.txt | sort -nr > freq.txt
 */
 ```
 
@@ -324,7 +326,7 @@ of research on "birds".
 
 The `results/` directory contains other similar results such as epilepsy,
 opioid, meditation research by universities and by countries. The HPC
-implementation finishes in **25 seconds**. The awk code is shown below.
+implementation finishes in **25 seconds**. The Awk code is shown below.
 
 ```bash
 #!/usr/bin/env awk -f
@@ -332,7 +334,7 @@ implementation finishes in **25 seconds**. The awk code is shown below.
 # problem statement
 #    visualize the geographic distribution of the topics in the publications.
 
-BEGIN{
+BEGIN {
     # Field separator
     FS = OFS = "qwqw"
     IGNORECASE = 1
@@ -345,7 +347,7 @@ BEGIN{
 }
 
 #collect the countries/cities/univs data
-NR==FNR{a[$1];next} 
+NR==FNR {a[$1];next} 
 
 #treat records with authors whose affiliation is available
 $0~topic && $num_authors!~/null/ && $authors~/\,/{ 
@@ -358,10 +360,10 @@ $0~topic && $num_authors!~/null/ && $authors~/\,/{
     }
 }
 
-END{
-   for(k in a){ 
-      if(a[k]) print a[k], k
-   }
+END {
+  for(k in a){ 
+     if(a[k]) print a[k], k
+  }
 }
 
 # HOW TO RUN:
@@ -375,7 +377,7 @@ END{
 # sort -nr -k 1 citywise_papers.txt > tmp && mv tmp citywise_papers.txt 
 # OR
 # After running the swift app:
-# awk -F: '{a[$2]+=$1} END{for (k in a) print a[k],k}' joined_cities.txt \
+# awk -F: '{a[$2]+=$1} END {for (k in a) print a[k],k}' joined_cities.txt \
          | sort -nr > tmp && mv tmp joined_cities.txt
 ```
 
@@ -404,7 +406,7 @@ Awk code shown below.
 
 # Solution 1 below will search for any two topics
 # mentioned and show the number of occurrence of both the topics year-wise
-BEGIN{
+BEGIN {
     # Field Separator
     FS = "qwqw"
     IGNORECASE = 1
@@ -419,7 +421,7 @@ $lang~/en/ && $year!~/null/ && $0~topic1 && $0~topic2 {
     a[$year]++
 }
 
-END{
+END {
     n = asorti(a,b)
     printf("Trend for topics: %s, %s\n", topic1, topic2)
     for (i=1;i<=n;i++) printf("%d :- %d\n", b[i], a[b[i]])
@@ -443,7 +445,7 @@ citations triplet.
 
 # Solution 2 is to find the highest cited paper
 # year-wise and figure out the topics it was based on
-BEGIN{
+BEGIN {
     FS = OFS = "qwqw"
     IGNORECASE = 1
 
@@ -459,7 +461,7 @@ $lang~/en/ && $year!~/null/ && $year < 2020
     max[$year] = $n_citation; a[$year]=$keywords
 }
 
-END{
+END {
     n = asorti(a,b)
     for (i=1;i<=n;i++) print b[i], a[b[i]], max[b[i]]
 }
@@ -479,7 +481,7 @@ snapshot trending words bubble in 2002 is shown below:
 
 [bubble]: https://raw.githubusercontent.com/ketancmaheshwari/SMC18/master/results/trending_words_by_year/2002.png "top 10 research words in 2002"
 
-The awk code that generates the raw data for above picture is shown below:
+The Awk code that generates the raw data for above picture is shown below:
 
 ```bash
 #!/usr/bin/env awk -f
@@ -488,7 +490,7 @@ The awk code that generates the raw data for above picture is shown below:
 # We achieve this by writing keywords, titles and abstract to files named after 
 # the year they appeared and do postprocessing on those files
 
-BEGIN{
+BEGIN {
     FS = "qwqw"
     IGNORECASE = 1
 
@@ -500,7 +502,7 @@ BEGIN{
 }
 
 #collect stop words
-NR==FNR{x[$1];next}
+NR == FNR {x[$1];next}
 
 $lang~/en/ && $n_citation>0 && $year==yr && $keywords!~/null/{
     # write title, keywords and abstract to a file 
@@ -587,7 +589,7 @@ finishes in **26 seconds**. Awk code below.
 # Solution: Find the keywords in the new proposal. 
 # If those keywords appear in an existing publication record, it is a suspect.
 
-BEGIN{
+BEGIN {
     FS = "qwqw"
     IGNORECASE = 1 
 
@@ -606,7 +608,7 @@ $0~topic1 && $0~topic2 && $0~topic3 && $0~topic4 && $lang~/en/ && $authors!~/nul
 
 # Conclusion 
 
-I show how the classic Linux tools may be leveraged to solve modern problems
+I show how the classic Unix tools may be leveraged to solve modern problems
 and that millions of records may be processed in under a minute at scale.
 About the data itself, it seems the biosciences research dominates
 the publications followed by perhaps physics. I am sure more sophisticated
