@@ -80,7 +80,7 @@ BEGIN {FS = OFS = "qwqw"}
 
 NR == FNR {a[$2] = $1}
 
-!($1 in a) && FILENAME ~ /aminer/{ print }
+!($1 in a) && FILENAME ~ /aminer/ { print }
 ```
 `NR == FNR` is a cool Awk idiom that ensures the condition is true only for the first file. This is because for each file that is processed the FNR (File Record Number) gets reset but the NR does not. This means the condition `NR == FNR` yields true only for the first file.
 
@@ -173,7 +173,7 @@ BEGIN {
     keywords=18; abstract=19; authors=20;
 }
 
-($0~topic && $num_authors > 0 && $n_citation!~/null/ && $n_citation>1000){
+($0~topic && $num_authors>0 && $n_citation!~/null/ && $n_citation>1000) {
    
    # find the authors whose names are repeating for a particular topic.
    # Those authors will be considered experts. 
@@ -243,7 +243,7 @@ BEGIN {
 NR == FNR {x[$1];next}
 
 $lang~/en/ && ($keywords!~/null/ || $title!~/null/ || $abstract!~/null/) {
-    # treat title
+    # treat titles
     $title = tolower($title)
     split($title, a, " ")
     for (i in a) if(length(a[i])>2 && match(a[i],/[a-z]/) && a[i] in x == 0) kw[a[i]]++
@@ -253,7 +253,7 @@ $lang~/en/ && ($keywords!~/null/ || $title!~/null/ || $abstract!~/null/) {
     split($keywords, b, ",")
     for (i in b) if(length(b[i])>2 && match(b[i],/[a-z]/) && b[i] in x == 0) kw[b[i]]++
 
-     # treat abstract (Computationally expensive, results are in:
+     # treat abstracts (Computationally expensive, results are in:
      # top_1000_words_from_kw_abstract_title_by_freq.txt)
      $abstract = tolower($abstract)
      gsub("\"","",$abstract)
@@ -293,7 +293,7 @@ file aminer[] = glob("/dev/shm/aminer_mag_papers/*.txt");
 /* output for each call will be collected here */
 file outfiles[]; 
 
-foreach v, i in aminer{
+foreach v, i in aminer {
   outfiles[i] = myawk(input("/home/km0/SMC18/src/prob2.awk"),
                 input("/home/km0/SMC18/data/stop_words.txt"), 
                 v);
@@ -347,10 +347,10 @@ BEGIN {
 }
 
 #collect the countries/cities/univs data
-NR==FNR {a[$1];next} 
+NR == FNR {a[$1];next} 
 
 #treat records with authors whose affiliation is available
-$0~topic && $num_authors!~/null/ && $authors~/\,/{ 
+$0~topic && $num_authors!~/null/ && $authors~/\,/ { 
     # extract words from author affiliation and compare with the countries.
     # If a match is found increment that array entry.
     w = split($authors, b, ",")
@@ -456,8 +456,8 @@ BEGIN {
     keywords=18; abstract=19; authors=20;
 }
 
-$lang~/en/ && $year!~/null/ && $year < 2020 
-&& $keywords!~/null/ && $n_citation!~/null/ && $n_citation>max[$year]{
+$lang~/en/ && $year!~/null/ && $year<2020 && $keywords!~/null/ 
+&& $n_citation!~/null/ && $n_citation>max[$year] {
     max[$year] = $n_citation; a[$year]=$keywords
 }
 
